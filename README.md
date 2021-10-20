@@ -45,8 +45,14 @@ Success! 🚀
 ## Usage
 
 At the moment `notion-markdown-cms` is meant to be consumed via its node.js API from build scripts
-wrapping your favourite static site generator tool. You can find an example
-script below. Consult the [SyncConfig](./src/SyncConfig.ts) reference for documentation of available configuration options.
+wrapping your favourite static site generator tool. Since we're not publishing to npm yet, add it to your project directly from github
+
+```bash
+npm add "git+ssh://git@github.com:meshcloud/notion-markdown-cms.git#main"
+```
+
+You can find an example build script using the node.js API below.
+Consult the [SyncConfig](./src/SyncConfig.ts) reference for documentation of available configuration options.
 
 > A CLI tool could be made available later.
 
