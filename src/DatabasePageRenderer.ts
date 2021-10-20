@@ -2,22 +2,27 @@ import { Client } from "@notionhq/client";
 import { DatabaseConfig } from "./SyncConfig";
 import { Database } from "./Database";
 import { DeferredRenderer } from "./DeferredRenderer";
+import { SyncConfig } from ".";
 
 export class DatabasePageRenderer {
   constructor(
     readonly publicApi: Client,
     readonly deferredRenderer: DeferredRenderer,
-    readonly config: Record<string, DatabaseConfig>
+    readonly config: SyncConfig
   ) {}
 
   async renderDatabase(databaseId: string): Promise<Database> {
-    const dbConfig: DatabaseConfig = this.config[databaseId] || {
-      outSubDir: "",
-      pageCategoryValuePrefix: "",
+    const fallbackDbConfig: DatabaseConfig = {
+      outDir:
+        databaseId === this.config.cmsDatabaseId
+          ? this.config.outDir
+          : this.config.outDir + "/" + databaseId,
       properties: {
-        category: "category",
+        category: "Category",
       },
     };
+    const dbConfig: DatabaseConfig =
+      this.config.databases[databaseId] || fallbackDbConfig;
 
     const db = await this.publicApi.databases.retrieve({
       database_id: databaseId,

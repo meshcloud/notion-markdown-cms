@@ -26,10 +26,11 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
     frontmatterRenderer,
     bodyRenderer
   );
+
   const dbRenderer = new DatabasePageRenderer(
     publicApi,
     deferredRenderer,
-    config.databases
+    config
   );
 
   deferredRenderer.initialize(dbRenderer, pageRenderer);
@@ -39,7 +40,7 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
   await deferredRenderer.process();
 
   await fs.writeFile(
-    "docs/.vuepress/index.ts",
+    config.indexPath,
     `export const index = ${JSON.stringify(
       deferredRenderer.getRenderedPages(),
       null,

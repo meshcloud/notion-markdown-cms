@@ -4,6 +4,12 @@ export interface SyncConfig {
   /**
    * Id of the Notion database containing the CMS content.
    * Traversing the block graph starts here.
+   * 
+   * By convention this database must have the following properties
+   * 
+   * - Name: page name
+   * - Category: page category
+   * - sort: number to control sorting of pages in sidebar
    */
   cmsDatabaseId: string;
 
@@ -31,17 +37,9 @@ export interface DatabaseConfig {
   /**
    * The output directory where the sync will place pages of this database.
    * 
-   * Example: "docs/mydb/"
+   * Example: docs/mydb"
    */
   outDir: string;
-
-  /**
-   * The prefix to apply to the category value of all pages.
-   * This is useful to create a unique category name for all pages of this database.
-   * 
-   * Example: "mydb/"
-   */
-  pageCategoryValuePrefix: string;
 
   /**
    * Notion API https://developers.notion.com/reference/post-database-query#post-database-query-sort

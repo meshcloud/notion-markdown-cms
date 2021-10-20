@@ -75,7 +75,8 @@ export class PropertiesParser {
     // patch properties by convention
     // vuepress expects a title and category property
     properties["title"] = input.values["name"]; // notion API always calls it name
-    properties["category"] = input.values[config.properties.category];
+    properties["category"] =
+      input.values[input.keys.get(config.properties.category)!!];
 
     // vuepress relies on files being called README.md to make "category home" pages
     // however the name "README" does not read nice in a sidebar menu, so we label these pages "Introduction"

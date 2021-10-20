@@ -31,15 +31,18 @@ export class PageRenderer {
       this.throwMissingRequiredProperty("name", page);
     }
 
-    const category = props.values[props.keys.get(config.properties.category)!!];
-    if (category) {
-      this.throwMissingRequiredProperty(config.properties.category, page);
+    const category = props.values["category"];
+    if (!category) {
+      this.throwMissingRequiredProperty("category", page);
     }
 
-    const nameSlug = slugify(name);
-    const categorySlug = config.pageCategoryValuePrefix + slugify(category);
+    debug(props);
 
-    const file = `${config.outDir}/${nameSlug}.md`;
+    const nameSlug = slugify(name);
+    const categorySlug = slugify(category);
+
+    const destDir = `${config.outDir}/${categorySlug}`;
+    const file = `${destDir}/${nameSlug}.md`;
 
     // Design: all the rendering performance could be greatly enhanced writing directly to output streams instead
     // of concatenating all in memory. OTOH naively concatenatic strings is straightforward, easier to debug and rendering
@@ -51,7 +54,7 @@ export class PageRenderer {
       file,
       properties: props,
       render: async () => {
-        const assetWriter = new AssetWriter(config.outDir);
+        const assetWriter = new AssetWriter(destDir);
 
         const frontmatter = this.frontmatterRenderer.renderFrontmatter(
           props.values
@@ -62,7 +65,7 @@ export class PageRenderer {
           assetWriter
         );
 
-        await fs.mkdir(config.outDir, { recursive: true });
+        await fs.mkdir(destDir, { recursive: true });
         await fs.writeFile(file, frontmatter + body);
 
         logger.info("wrote: " + file);
