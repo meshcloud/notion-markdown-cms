@@ -42,17 +42,77 @@ Success! 🚀
 | Checkbox          | ?          |                                              |
 | Table Of Contents | ?          |                                              |
 
-### Configuration
+## Usage
 
-## Related Projects and Inspiration
+At the moment `notion-markdown-cms` is meant to be consumed via its node.js API from build scripts
+wrapping your favourite static site generator tool. You can find an example
+script below. Consult the [SyncConfig](./src/SyncConfig.ts) reference for documentation of available configuration options.
+
+> A CLI tool could be made available later.
+
+```typescript
+import { SyncConfig, sync } from "notion-markdown-cms";
+
+const config: SyncConfig = {
+  cmsDatabaseId: "8f1de8c578fb4590ad6fbb0dbe283338",
+  outDir: "docs/",
+  indexPath: "docs/.vuepress/index.ts",
+  databases: {
+    "fe9836a9-6557-4f17-8adb-a93d2584f35f": {
+      parentCategory: "cfmm/",
+      sorts: [
+        {
+          property: "Scope",
+          direction: "ascending",
+        },
+        {
+          property: "Cluster",
+          direction: "ascending",
+        },
+      ],
+      properties: {
+        category: "scope",
+        include: ["Name", "Scope", "Cluster", "Journey Stage", "Summary"],
+      },
+    },
+  },
+};
+
+async function main() {
+  const notionApiToken = process.env.NOTION_API_TOKEN;
+  if (!notionApiToken) {
+    throw new Error(
+      "Required NOTION_API_TOKEN environment variable not provided."
+    );
+  }
+
+  await sync(notionApiToken, config);
+}
+
+main();
+```
+
+## Credits, Related Projects and Inspiration
 
 There are quite a few alternatives out there already, so why did we build `notion-markdown-cms`?
 Below table, albeit subjective, tries to answer this.
 
-| Project                                                                  | Notion API    | Language   | Rendering Engine    |
-| ------------------------------------------------------------------------ | ------------- | ---------- | ------------------- |
-| [Nortion Markdown CMS](https://github.com/meshcloud/notion-markdown-cms) | ✅ official   | TypeScript | Markdown + JS Index |
-| [Notion2GitHub](https://github.com/narkdown/notion2github)               | ⚠️ unofficial | Python     | Markdown            |
-| [notion-cms](https://github.com/n6g7/notion-cms)                         | ⚠️ unofficial | TypeScript | React               |
-| [vue-notion](https://github.com/janniks/vue-notion)                      | ⚠️ unofficial | JavaScript | Vue.js              |
-| [react-notion](https://github.com/janniks/react-notion)                  | ⚠️ unofficial | JavaScript | React               |
+| Project                                                                  | Notion API    | Language   | Rendering Engine    | Output looks like    |
+| ------------------------------------------------------------------------ | ------------- | ---------- | ------------------- | -------------------- |
+| [Nortion Markdown CMS](https://github.com/meshcloud/notion-markdown-cms) | ✅ official   | TypeScript | Markdown + JS Index | Site generator theme |
+| [Notion2GitHub](https://github.com/narkdown/notion2github)               | ⚠️ unofficial | Python     | Markdown            | Site generator theme |
+| [notion-cms](https://github.com/n6g7/notion-cms)                         | ⚠️ unofficial | TypeScript | React               | Notion App           |
+| [vue-notion](https://github.com/janniks/vue-notion)                      | ⚠️ unofficial | JavaScript | Vue.js              | Notion App           |
+| [react-notion](https://github.com/janniks/react-notion)                  | ⚠️ unofficial | JavaScript | React               | Notion App           |
+
+## Development
+
+For convenient development you can use
+
+- `nix-shell` to set up a development environemnt
+- You'll need a Notion database for testing. You can e.g. copy one of these to your own Notion Workspace
+  - [Notion Kit Test Suite](https://www.notion.so/Notion-Test-Suite-067dd719a912471ea9a3ac10710e7fdf)
+  - [Narkdown's Test Suite](https://www.notion.so/acc3dfd0339e4cacb5baae8673fddfad?v=be43c1c8dd644cfb9df9efd97d8af60a)
+- A [Notion API Token](https://developers.notion.com/docs/authorization)
+
+> As this project is still in its very early stages, `notion-markdown-cms` does not come with its own demo, example or test cases yet.
