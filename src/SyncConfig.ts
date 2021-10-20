@@ -8,7 +8,9 @@ export interface SyncConfig {
   cmsDatabaseId: string;
 
   /**
-   * The output directory where the sync will place pages, e.g. "docs/"
+   * The output directory where the sync will place pages.
+   * 
+   * Example: "docs/"
    */
   outDir: string;
 
@@ -27,15 +29,41 @@ export interface SyncConfig {
 
 export interface DatabaseConfig {
   /**
-   * Name of the parent category to use 
+   * The output directory where the sync will place pages of this database.
+   * 
+   * Example: "docs/mydb/"
    */
-  parentCategory: string;
+  outDir: string;
+
+  /**
+   * The prefix to apply to the category value of all pages.
+   * This is useful to create a unique category name for all pages of this database.
+   * 
+   * Example: "mydb/"
+   */
+  pageCategoryValuePrefix: string;
+
   /**
    * Notion API https://developers.notion.com/reference/post-database-query#post-database-query-sort
    */
   sorts?: Sort[];
+
+  /**
+   * Configuration options for Notion API page properties
+   */
   properties: {
+    /**
+     * The Notion API page property that provides the value to use for the markdown page category.
+     * This will be prefixed by DatabaseConfig.pageCategoryValuePrefix
+     * 
+     * Example: "Cluster"
+     */
     category: string;
+    
+    /**
+     * A whitelist of Notion API page property names to include in the markdown page properties.
+     * Use this to select properties for export and control their ordering in rendered tables.
+     */
     include?: string[];
   };
 }

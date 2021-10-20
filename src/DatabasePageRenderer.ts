@@ -11,8 +11,9 @@ export class DatabasePageRenderer {
   ) {}
 
   async renderDatabase(databaseId: string): Promise<Database> {
-    const dbConfig = this.config[databaseId] || {
-      parentCategory: "",
+    const dbConfig: DatabaseConfig = this.config[databaseId] || {
+      outSubDir: "",
+      pageCategoryValuePrefix: "",
       properties: {
         category: "category",
       },

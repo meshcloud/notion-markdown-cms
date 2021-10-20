@@ -11,6 +11,8 @@ import { DatabaseConfig } from "./SyncConfig";
 import { PropertiesParser } from "./PropertiesParser";
 import { logger } from "./logger";
 
+const debug = require("debug")("page");
+
 const fs = fsc.promises;
 
 export class PageRenderer {
@@ -25,12 +27,19 @@ export class PageRenderer {
     const props = this.propertiesParser.filter(config, parsed);
 
     const name = props.values["name"];
-    const nameSlug = slugify(name);
-    const categorySlug =
-      config.parentCategory + slugify(props.values["category"]);
+    if (!name) {
+      this.throwMissingRequiredProperty("name", page);
+    }
 
-    const dir = `docs/${categorySlug}`;
-    const file = `${dir}/${nameSlug}.md`;
+    const category = props.values[props.keys.get(config.properties.category)!!];
+    if (category) {
+      this.throwMissingRequiredProperty(config.properties.category, page);
+    }
+
+    const nameSlug = slugify(name);
+    const categorySlug = config.pageCategoryValuePrefix + slugify(category);
+
+    const file = `${config.outDir}/${nameSlug}.md`;
 
     // Design: all the rendering performance could be greatly enhanced writing directly to output streams instead
     // of concatenating all in memory. OTOH naively concatenatic strings is straightforward, easier to debug and rendering
@@ -42,7 +51,7 @@ export class PageRenderer {
       file,
       properties: props,
       render: async () => {
-        const assetWriter = new AssetWriter(dir);
+        const assetWriter = new AssetWriter(config.outDir);
 
         const frontmatter = this.frontmatterRenderer.renderFrontmatter(
           props.values
@@ -53,11 +62,18 @@ export class PageRenderer {
           assetWriter
         );
 
-        await fs.mkdir(dir, { recursive: true });
+        await fs.mkdir(config.outDir, { recursive: true });
         await fs.writeFile(file, frontmatter + body);
 
         logger.info("wrote: " + file);
       },
     };
+  }
+
+  private throwMissingRequiredProperty(propertyName: string, page: Page) {
+    const msg = `Page ${page.url} is missing required property ${propertyName}`;
+    debug(msg + "\n%O", page);
+
+    throw new Error(msg);
   }
 }
