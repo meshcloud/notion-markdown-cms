@@ -1,12 +1,17 @@
 {
   "name": "notion-markdown-cms",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": "git@github.com:meshcloud/cloudfoundation.git",
   "author": "Johannes Rudolph <jrudolph@meshcloud.io>",
   "license": "MIT",
+  "files": [
+    "dist",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "sync": "ts-node src/index.ts",
     "build": "tsc",
     "prepare": "tsc"
   },
