@@ -1,0 +1,29 @@
+{
+  "name": "notion-markdown-cms",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "git@github.com:meshcloud/cloudfoundation.git",
+  "author": "Johannes Rudolph <jrudolph@meshcloud.io>",
+  "license": "MIT",
+  "scripts": {
+    "sync": "ts-node src/index.ts",
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "devDependencies": {
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3",
+    "@types/js-yaml": "^4.0.3",
+    "@types/mime-types": "^2.1.1"
+  },
+  "dependencies": {
+    "@notionhq/client": "^0.3.2",
+    "chalk": "^4.1.2",
+    "dotenv": "^10.0.0",
+    "got": "^11.8.2",
+    "js-yaml": "^4.1.0",
+    "keyv-file": "^0.2.0",
+    "mime-types": "^2.1.32",
+    "slugify": "^1.6.0"
+  }
+}

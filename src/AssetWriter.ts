@@ -1,0 +1,37 @@
+import { promises as fs } from "fs";
+import got from "got";
+import { KeyvFile } from "keyv-file";
+import * as mime from "mime-types";
+
+const cache = new KeyvFile({
+  filename: ".cache/keyv.json",
+});
+
+export class AssetWriter {
+  constructor(readonly dir: string) {}
+
+  async store(name: string, buffer: Buffer) {
+    await fs.writeFile(`${this.dir}/${name}`, buffer);
+  }
+
+  async download(url: string, fileName: string) {
+    // the got http lib promises to do proper user-agent compliant http caching
+    // see https://github.com/sindresorhus/got/blob/main/documentation/cache.md
+
+    // unfortunately download caching does _not_ work with images hosted on notion
+    // because the notion API does not return cache friendly signed S3 URLs, https://advancedweb.hu/cacheable-s3-signed-urls/
+    const response = await got(url, { cache });
+
+    const ext = mime.extension(
+      response.headers["content-type"] || "application/octet-stream"
+    );
+    const imageFile = fileName + "." + ext;
+
+    console.debug(
+      `downloading (cached: ${response.isFromCache}): ${imageFile}`
+    );
+    await this.store(imageFile, response.rawBody);
+
+    return imageFile;
+  }
+}

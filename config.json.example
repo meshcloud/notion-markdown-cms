@@ -1,0 +1,27 @@
+{
+  "root": "8f1de8c578fb4590ad6fbb0dbe283338",
+  "databases": {
+    "fe9836a9-6557-4f17-8adb-a93d2584f35f": {
+      "parentCategory": "mydb/",
+      "sorts": [
+        {
+          "property": "Scope",
+          "direction": "ascending"
+        },
+        {
+          "property": "Cluster",
+          "direction": "ascending"
+        }
+      ],
+      "properties": {
+        "category": "scope",
+        "include": [
+          "Name",
+          "Scope",
+          "Cluster",
+          "Summary"
+        ]
+      }
+    }
+  }
+}
