@@ -34,7 +34,7 @@ export class RecursiveBodyRenderer {
     }
 
     const heading = `# ${props.values["title"]}\n\n`;
-    
+
     return heading + body;
   }
 
@@ -43,8 +43,8 @@ export class RecursiveBodyRenderer {
     indent: string,
     assets: AssetWriter
   ): Promise<string> {
-    const parentLine =
-      indent + (await this.blockRenderer.renderBlockLine(block, assets));
+    const parentBlock = await this.blockRenderer.renderBlock(block, assets);
+    const parentLines = this.indent(parentBlock, indent);
 
     // due to the way the Notion API is built, we need to recurisvely retrieve child
     // blocks, see https://developers.notion.com/reference/retrieve-a-block
@@ -59,6 +59,13 @@ export class RecursiveBodyRenderer {
     );
     const childLines = await Promise.all(renderChilds);
 
-    return [parentLine, ...childLines].join("\n\n");
+    return [parentLines, ...childLines].join("\n\n");
+  }
+
+  private indent(content: string, indent: string) {
+    return content
+      .split("\n")
+      .map((x) => indent + x)
+      .join("\n");
   }
 }

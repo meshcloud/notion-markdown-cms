@@ -68,7 +68,7 @@ export class BlockRenderer {
     private readonly richText: RichTextRenderer
   ) {}
 
-  async renderBlockLine(block: Block, assets: AssetWriter): Promise<string> {
+  async renderBlock(block: Block, assets: AssetWriter): Promise<string> {
     switch (block.type) {
       case "paragraph":
         return this.richText.renderMarkdown(block.paragraph.text);
