@@ -18,29 +18,32 @@ Success! 🚀
 
 ### Supported Blocks
 
-| Block Type        | Supported  | Notes                                        |
-| ----------------- | ---------- | -------------------------------------------- |
-| Text              | ✅ Yes     |                                              |
-| Heading           | ✅ Yes     |                                              |
-| Image             | ✅ Yes     |                                              |
-| Image Caption     | ✅ Yes     |                                              |
-| Bulleted List     | ✅ Yes     |                                              |
-| Numbered List     | ✅ Yes     |                                              |
-| Quote             | ✅ Yes     |                                              |
-| Callout           | ✅ Yes     |                                              |
-| Column            | ❌ Missing |                                              |
-| iframe            | ✅ Yes     |                                              |
-| Video             | ❌ Missing |                                              |
-| Divider           | ✅ Yes     |                                              |
-| Link              | ✅ Yes     |                                              |
-| Code              | ✅ Yes     |                                              |
-| Web Bookmark      | ✅ Yes     |                                              |
-| Toggle List       | ✅ Yes     |                                              |
-| Page Links        | ❌ Missing |                                              |
-| Header            | ✅ Yes     |                                              |
-| Databases         | ✅ Yes     | including child pages, inline tables planned |
-| Checkbox          | ?          |                                              |
-| Table Of Contents | ?          |                                              |
+| Block Type        | Supported      | Notes                                                 |
+| ----------------- | -------------- | ----------------------------------------------------- |
+| Text              | ✅ Yes         |                                                       |
+| Heading           | ✅ Yes         |                                                       |
+| Image             | ✅ Yes         |                                                       |
+| Image Caption     | ✅ Yes         |                                                       |
+| Bulleted List     | ✅ Yes         |                                                       |
+| Numbered List     | ✅ Yes         |                                                       |
+| Quote             | ✅ Yes         |                                                       |
+| Callout           | ✅ Yes         |                                                       |
+| Toggle            | ❌ Missing     |                                                       |
+| Checkbox          | ?              |                                                       |
+| Column            | ❌ Missing     |                                                       |
+| Embed             | ❌ Missing     |                                                       |
+| Video             | ❌ Missing     |                                                       |
+| Audio             | ❌ Missing     |                                                       |
+| Divider           | ✅ Yes         |                                                       |
+| Link              | ✅ Yes         |                                                       |
+| Code              | ✅ Yes         |                                                       |
+| Web Bookmark      | ✅ Yes         |                                                       |
+| Web Bookmark      | ❌ Missing     |                                                       |
+| Toggle List       | ❌ Missing     |                                                       |
+| Page Links        | ❌ Missing     |                                                       |
+| Databases         | ✅ Yes         | including child pages, inline tables planned          |
+| Child Pages       | ❌ not planned | avoid, they don't mix well with clear site navigation |
+| Table Of Contents | ?              |                                                       |
 
 ## Usage
 
