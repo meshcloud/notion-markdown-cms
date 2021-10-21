@@ -140,7 +140,7 @@ export class BlockRenderer {
     const props = db.pages[0].properties;
 
     const table: any[][] = [];
-    
+
     const headers = Array.from(props.keys.keys());
     table[0] = headers;
 
@@ -203,7 +203,11 @@ export class BlockRenderer {
   }
 }
 
-function escapeTableCell(content: string): string {
+function escapeTableCell(content: string | number | any): string {
   // markdown table cells do not support newlines, however we can insert <br> elements instead
-  return content.replace(/\n/g, "<br>");
+  if (typeof content === "string") {
+    return content.replace(/\n/g, "<br>");
+  }
+
+  return content.toString();
 }
