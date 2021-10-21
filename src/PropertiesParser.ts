@@ -59,6 +59,7 @@ export class PropertiesParser {
         title: title, // notion API always calls it name
         category: category,
         order: order,
+        ...config.additionalPageFrontmatter
       },
       values: properties,
       keys: this.sortKeys(config, keys),

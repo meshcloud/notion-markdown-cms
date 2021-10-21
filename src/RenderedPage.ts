@@ -1,4 +1,4 @@
-import { PageMeta } from "./PageProperties";
+import { PageMeta } from "./PageMeta";
 
 export interface RenderedPage {
   file: string;

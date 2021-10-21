@@ -49,6 +49,11 @@ export interface DatabaseConfig {
   skipMarkdownTable?: boolean;
 
   /**
+   * Add custom data to the page frontmatter
+   */
+  additionalPageFrontmatter?: Record<string, any>;
+
+  /**
    * Configuration options for Notion API page properties
    */
   properties: {
