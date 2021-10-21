@@ -115,6 +115,10 @@ export class BlockRenderer {
         const db = await this.deferredRenderer.renderDatabasePages(block.id);
         const msg = `<!-- included database ${block.id} -->\n`;
 
+        if (db.config.skipMarkdownTable) {
+          return msg;
+        }
+
         // todo: make this nicer, e.g. render multi tables
         return msg + this.renderTables(db);
 

@@ -42,9 +42,10 @@ export class PropertiesParser {
         return value.multi_select.map((x) => x.name);
       case "date":
         return value.date;
+      case "relation":
+        return value.relation.map((x) => x.id);
       case "formula":
       case "rollup":
-      case "relation":
       case "people":
       case "files":
       case "checkbox":

@@ -35,9 +35,7 @@ export class PageRenderer {
     if (!category) {
       this.throwMissingRequiredProperty("category", page);
     }
-
-    debug(props);
-
+ 
     const nameSlug = slugify(name);
     const categorySlug = slugify(category);
 

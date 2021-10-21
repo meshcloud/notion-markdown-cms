@@ -4,9 +4,9 @@ export interface SyncConfig {
   /**
    * Id of the Notion database containing the CMS content.
    * Traversing the block graph starts here.
-   * 
+   *
    * By convention this database must have the following properties
-   * 
+   *
    * - Name: page name
    * - Category: page category
    * - sort: number to control sorting of pages in sidebar
@@ -15,14 +15,14 @@ export interface SyncConfig {
 
   /**
    * The output directory where the sync will place pages.
-   * 
+   *
    * Example: "docs/"
    */
   outDir: string;
 
   /**
    * The path where the sync will store an index of rendered pages and their properties.
-   * The index is 
+   * The index is
    */
   indexPath: string;
 
@@ -36,7 +36,7 @@ export interface SyncConfig {
 export interface DatabaseConfig {
   /**
    * The output directory where the sync will place pages of this database.
-   * 
+   *
    * Example: docs/mydb"
    */
   outDir: string;
@@ -46,18 +46,19 @@ export interface DatabaseConfig {
    */
   sorts?: Sort[];
 
+  skipMarkdownTable?: boolean;
+
   /**
    * Configuration options for Notion API page properties
    */
   properties: {
     /**
-     * The Notion API page property that provides the value to use for the markdown page category.
-     * This will be prefixed by DatabaseConfig.pageCategoryValuePrefix
-     * 
+     * The Notion API page property that provides an optional sub-category value to use for the markdown page category.
+     *
      * Example: "Cluster"
      */
     category: string;
-    
+
     /**
      * A whitelist of Notion API page property names to include in the markdown page properties.
      * Use this to select properties for export and control their ordering in rendered tables.
