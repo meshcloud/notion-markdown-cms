@@ -80,14 +80,11 @@ export class DeferredRenderer {
     logger.success("sync complete");
   }
 
-  public getRenderedPages() : RenderedPage[] {
+  public getRenderedPages(): RenderedPage[] {
     return Array.from(this.renderedPages.values()).map((x) => ({
-      id: x.id,
-      category: x.category,
       file: x.file,
+      meta: x.properties.meta,
       properties: x.properties.values,
     }));
   }
 }
-
-

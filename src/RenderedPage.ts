@@ -1,7 +1,7 @@
+import { PageMeta } from "./PageProperties";
 
 export interface RenderedPage {
-  id: string;
-  category: string;
   file: string;
+  meta: PageMeta;
   properties: Record<string, any>;
 }

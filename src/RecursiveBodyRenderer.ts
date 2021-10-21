@@ -3,7 +3,6 @@ import { Block, Page } from "@notionhq/client/build/src/api-types";
 
 import { AssetWriter } from "./AssetWriter";
 import { BlockRenderer } from "./BlockRenderer";
-import { PageProperties } from "./PageProperties";
 
 export class RecursiveBodyRenderer {
   constructor(
@@ -13,14 +12,11 @@ export class RecursiveBodyRenderer {
 
   async renderBody(
     page: Page,
-    props: PageProperties,
     assets: AssetWriter
   ): Promise<string> {
     const childs = await this.publicApi.blocks.children.list({
       block_id: page.id,
     });
-
-    const hasHeading = childs.results[0]?.type === "heading_1";
 
     // todo: paging
     const renderChilds = childs.results.map(
@@ -29,13 +25,7 @@ export class RecursiveBodyRenderer {
     const blocks = await Promise.all(renderChilds);
     const body = blocks.join("\n\n");
 
-    if (hasHeading) {
-      return body;
-    }
-
-    const heading = `# ${props.values["title"]}\n\n`;
-
-    return heading + body;
+    return body;
   }
 
   async renderBlock(

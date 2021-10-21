@@ -11,8 +11,6 @@ import { DatabaseConfig } from "./SyncConfig";
 import { PropertiesParser } from "./PropertiesParser";
 import { logger } from "./logger";
 
-const debug = require("debug")("page");
-
 const fs = fsc.promises;
 
 export class PageRenderer {
@@ -23,23 +21,12 @@ export class PageRenderer {
   ) {}
 
   renderPage(page: Page, config: DatabaseConfig): RenderPageTask {
-    const parsed = this.propertiesParser.parse(page.properties);
-    const props = this.propertiesParser.filter(config, parsed);
+    const props = this.propertiesParser.parse(page, config);
 
-    const name = props.values["name"];
-    if (!name) {
-      this.throwMissingRequiredProperty("name", page);
-    }
-
-    const category = props.values["category"];
-    if (!category) {
-      this.throwMissingRequiredProperty("category", page);
-    }
- 
-    const nameSlug = slugify(name);
-    const categorySlug = slugify(category);
-
+    const categorySlug = slugify(props.meta.category);
     const destDir = `${config.outDir}/${categorySlug}`;
+
+    const nameSlug = slugify(props.meta.title);
     const file = `${destDir}/${nameSlug}.md`;
 
     // Design: all the rendering performance could be greatly enhanced writing directly to output streams instead
@@ -48,20 +35,13 @@ export class PageRenderer {
 
     return {
       id: page.id,
-      category: categorySlug,
       file,
       properties: props,
       render: async () => {
         const assetWriter = new AssetWriter(destDir);
 
-        const frontmatter = this.frontmatterRenderer.renderFrontmatter(
-          props.values
-        );
-        const body = await this.bodyRenderer.renderBody(
-          page,
-          props,
-          assetWriter
-        );
+        const frontmatter = this.frontmatterRenderer.renderFrontmatter(props);
+        const body = await this.bodyRenderer.renderBody(page, assetWriter);
 
         await fs.mkdir(destDir, { recursive: true });
         await fs.writeFile(file, frontmatter + body);
@@ -69,12 +49,5 @@ export class PageRenderer {
         logger.info("wrote: " + file);
       },
     };
-  }
-
-  private throwMissingRequiredProperty(propertyName: string, page: Page) {
-    const msg = `Page ${page.url} is missing required property ${propertyName}`;
-    debug(msg + "\n%O", page);
-
-    throw new Error(msg);
   }
 }

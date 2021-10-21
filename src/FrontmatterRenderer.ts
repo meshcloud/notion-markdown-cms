@@ -1,11 +1,17 @@
 import * as yaml from "js-yaml";
+import { PageProperties } from "./PageProperties";
 
 export class FrontmatterRenderer {
   constructor() {}
 
-  public renderFrontmatter(properties: Record<string, any>) {    
-    const frontmatter = `---\n${yaml.dump(properties)}---\n\n`;
+  public renderFrontmatter(props: PageProperties) {
+    const obj = {
+      ...props.meta,
+      properties: props.values,
+    };
 
-    return frontmatter
+    const frontmatter = `---\n${yaml.dump(obj)}---\n\n`;
+
+    return frontmatter;
   }
 }
