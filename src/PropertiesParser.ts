@@ -11,7 +11,7 @@ const debug = require("debug")("properties");
 export class PropertiesParser {
   constructor(private readonly richText: RichTextRenderer) {}
 
-  public parse(page: Page, config: DatabaseConfig): PageProperties {
+  public async parse(page: Page, config: DatabaseConfig): Promise<PageProperties> {
     const properties: Record<string, any> = {};
     const keys = new Map<string, string>();
 
@@ -19,8 +19,8 @@ export class PropertiesParser {
     let category: string | null = null;
     let order: number | undefined = undefined;
 
-    Object.entries(page.properties).forEach(([name, value]) => {
-      const parsedValue = this.parsePropertyValue(value);
+    for (const [name, value] of Object.entries(page.properties)) {
+      const parsedValue = await this.parsePropertyValue(value);
 
       if (
         !config.properties.include ||
@@ -42,7 +42,7 @@ export class PropertiesParser {
       if (name === "order") {
         order = parsedValue;
       }
-    });
+    }
 
     if (!title) {
       throw this.errorMissingRequiredProperty("of type 'title'", page);
@@ -59,21 +59,21 @@ export class PropertiesParser {
         title: title, // notion API always calls it name
         category: category,
         order: order,
-        ...config.additionalPageFrontmatter
+        ...config.additionalPageFrontmatter,
       },
       values: properties,
       keys: this.sortKeys(config, keys),
     };
   }
 
-  private parsePropertyValue(value: PropertyValue): any {
+  private async parsePropertyValue(value: PropertyValue): Promise<any> {
     switch (value.type) {
       case "number":
         return value.number;
       case "title":
-        return this.richText.renderMarkdown(value.title);
+        return await this.richText.renderMarkdown(value.title);
       case "rich_text":
-        return this.richText.renderMarkdown(value.rich_text);
+        return await this.richText.renderMarkdown(value.rich_text);
       case "select":
         return value.select?.name;
       case "multi_select":

@@ -1,10 +1,10 @@
 import { Client } from "@notionhq/client";
-import { DatabaseConfig } from "./SyncConfig";
 import { Database } from "./Database";
 import { DeferredRenderer } from "./DeferredRenderer";
 import { SyncConfig } from ".";
+import { lookupDatabaseConfig } from "./config";
 
-export class DatabasePageRenderer {
+export class DatabaseRenderer {
   constructor(
     readonly publicApi: Client,
     readonly deferredRenderer: DeferredRenderer,
@@ -12,17 +12,7 @@ export class DatabasePageRenderer {
   ) {}
 
   async renderDatabase(databaseId: string): Promise<Database> {
-    const fallbackDbConfig: DatabaseConfig = {
-      outDir:
-        databaseId === this.config.cmsDatabaseId
-          ? this.config.outDir
-          : this.config.outDir + "/" + databaseId,
-      properties: {
-        category: "Category",
-      },
-    };
-    const dbConfig: DatabaseConfig =
-      this.config.databases[databaseId] || fallbackDbConfig;
+    const dbConfig = lookupDatabaseConfig(this.config, databaseId);
 
     const db = await this.publicApi.databases.retrieve({
       database_id: databaseId,
@@ -40,12 +30,15 @@ export class DatabasePageRenderer {
       );
     }
 
-    const tasks = allPages.results.map((x) =>
+    const prepareRenderPageTasks = allPages.results.map((x) =>
       this.deferredRenderer.renderPage(x, dbConfig)
     );
 
+    // note: the await here is not actually starting to render the pages, however it prepares the page render task
+    const renderPageTasks = await Promise.all(prepareRenderPageTasks);
+
     return {
-      pages: tasks,
+      pages: renderPageTasks,
       config: dbConfig,
     };
   }

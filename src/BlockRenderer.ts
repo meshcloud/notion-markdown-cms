@@ -16,6 +16,7 @@ import { Database } from "./Database";
 import { DeferredRenderer } from "./DeferredRenderer";
 import { RichTextRenderer } from "./RichTextRenderer";
 import { logger } from "./logger";
+import { LinkRenderer } from "./LinkRenderer";
 
 const debug = require("debug")("blocks");
 
@@ -65,40 +66,41 @@ export type Block =
 export class BlockRenderer {
   constructor(
     private readonly deferredRenderer: DeferredRenderer,
-    private readonly richText: RichTextRenderer
+    private readonly richText: RichTextRenderer,
+    private readonly linkRenderer: LinkRenderer
   ) {}
 
   async renderBlock(block: Block, assets: AssetWriter): Promise<string> {
     switch (block.type) {
       case "paragraph":
-        return this.richText.renderMarkdown(block.paragraph.text);
+        return await this.richText.renderMarkdown(block.paragraph.text);
       case "heading_1":
-        return "# " + this.richText.renderMarkdown(block.heading_1.text);
+        return "# " + await this.richText.renderMarkdown(block.heading_1.text);
       case "heading_2":
-        return "## " + this.richText.renderMarkdown(block.heading_2.text);
+        return "## " + await this.richText.renderMarkdown(block.heading_2.text);
       case "heading_3":
-        return "### " + this.richText.renderMarkdown(block.heading_3.text);
+        return "### " + await this.richText.renderMarkdown(block.heading_3.text);
       case "bulleted_list_item":
         return (
-          "- " + this.richText.renderMarkdown(block.bulleted_list_item.text)
+          "- " + await this.richText.renderMarkdown(block.bulleted_list_item.text)
         );
       case "numbered_list_item":
         return (
-          "1. " + this.richText.renderMarkdown(block.numbered_list_item.text)
+          "1. " + await this.richText.renderMarkdown(block.numbered_list_item.text)
         );
       case "to_do":
-        return "[ ] " + this.richText.renderMarkdown(block.to_do.text);
+        return "[ ] " + await this.richText.renderMarkdown(block.to_do.text);
       case "image":
         return await this.renderImage(block, assets);
       case "quote":
         block as any;
-        return "> " + this.richText.renderMarkdown((block as any).quote.text);
+        return "> " + await this.richText.renderMarkdown((block as any).quote.text);
       case "code":
         return (
           "```" +
           block.code.language +
           "\n" +
-          this.richText.renderMarkdown(block.code.text) +
+          await this.richText.renderMarkdown(block.code.text) +
           "\n```"
         );
       case "callout":
@@ -106,7 +108,7 @@ export class BlockRenderer {
           "> " +
           this.renderIcon(block.callout.icon) +
           " " +
-          this.richText.renderMarkdown(block.callout.text)
+          await this.richText.renderMarkdown(block.callout.text)
         );
       case "divider":
         return "---";
@@ -154,7 +156,7 @@ export class BlockRenderer {
         cols.map((c, i) => {
           const content = escapeTableCell(r.properties.values[c]);
           return i == 0
-            ? this.renderMarkdownLink(content, r.file.substr("docs".length)) // make the first cell a relative link to the page
+            ? this.linkRenderer.renderPageLink(content, r) // make the first cell a relative link to the page
             : content;
         })
       )
@@ -193,10 +195,6 @@ export class BlockRenderer {
       case "file":
         return image.file.url;
     }
-  }
-
-  private renderMarkdownLink(text: string, url: string): string {
-    return `[${text}](${url})`;
   }
 
   private renderUnsupported(msg: string, obj: any): string {

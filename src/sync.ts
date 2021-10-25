@@ -5,10 +5,12 @@ import { FrontmatterRenderer } from "./FrontmatterRenderer";
 import { PageRenderer } from "./PageRenderer";
 import { PropertiesParser } from "./PropertiesParser";
 import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
-import { DatabasePageRenderer } from "./DatabasePageRenderer";
+import { DatabaseRenderer } from "./DatabaseRenderer";
 import { DeferredRenderer } from "./DeferredRenderer";
 import { SyncConfig } from "./SyncConfig";
 import { RichTextRenderer } from "./RichTextRenderer";
+import { MentionedPageRenderer } from "./MentionedPageRenderer";
+import { LinkRenderer } from "./LinkRenderer";
 
 export async function sync(notionApiToken: string, config: SyncConfig) {
   const publicApi = new Client({
@@ -16,10 +18,24 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
   });
 
   const deferredRenderer = new DeferredRenderer();
-  const richTextRenderer = new RichTextRenderer();
+
+  const mentionedPageRenderer = new MentionedPageRenderer(
+    publicApi,
+    deferredRenderer,
+    config
+  );
+  const linkRenderer = new LinkRenderer(config);
+  const richTextRenderer = new RichTextRenderer(
+    mentionedPageRenderer,
+    linkRenderer
+  );
   const frontmatterRenderer = new FrontmatterRenderer();
   const propertiesParser = new PropertiesParser(richTextRenderer);
-  const blockRenderer = new BlockRenderer(deferredRenderer, richTextRenderer);
+  const blockRenderer = new BlockRenderer(
+    deferredRenderer,
+    richTextRenderer,
+    linkRenderer
+  );
   const bodyRenderer = new RecursiveBodyRenderer(publicApi, blockRenderer);
   const pageRenderer = new PageRenderer(
     propertiesParser,
@@ -27,11 +43,7 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
     bodyRenderer
   );
 
-  const dbRenderer = new DatabasePageRenderer(
-    publicApi,
-    deferredRenderer,
-    config
-  );
+  const dbRenderer = new DatabaseRenderer(publicApi, deferredRenderer, config);
 
   deferredRenderer.initialize(dbRenderer, pageRenderer);
 

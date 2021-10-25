@@ -1,16 +1,16 @@
 import { Page } from "@notionhq/client/build/src/api-types";
 import { DatabaseConfig } from "./SyncConfig";
 import { Database } from "./Database";
-import { DatabasePageRenderer } from "./DatabasePageRenderer";
+import { DatabaseRenderer } from "./DatabaseRenderer";
 import { logger } from "./logger";
 import { PageRenderer } from "./PageRenderer";
-import { RenderPageTask as RenderPageTask } from "./RenderedPageTask";
+import { RenderPageTask as RenderPageTask } from "./RenderPageTask";
 import { RenderedPage } from "./RenderedPage";
 
 const debug = require("debug")("rendering");
 
 export class DeferredRenderer {
-  private dbRenderer!: DatabasePageRenderer;
+  private dbRenderer!: DatabaseRenderer;
   private pageRenderer!: PageRenderer;
 
   private pageQueue: (() => Promise<any>)[] = [];
@@ -19,7 +19,7 @@ export class DeferredRenderer {
   private readonly renderedPages = new Map<string, RenderPageTask>();
 
   public initialize(
-    dbRenderer: DatabasePageRenderer,
+    dbRenderer: DatabaseRenderer,
     pageRenderer: PageRenderer
   ) {
     this.dbRenderer = dbRenderer;
@@ -40,14 +40,15 @@ export class DeferredRenderer {
     return fetched;
   }
 
-  public renderPage(page: Page, config: DatabaseConfig): RenderPageTask {
+  public async renderPage(page: Page, config: DatabaseConfig): Promise<RenderPageTask> {
     const cached = this.renderedPages.get(page.id);
     if (cached) {
       debug("page cache hit " + page.id);
       return cached;
     }
 
-    const task = this.pageRenderer.renderPage(page, config);
+    const task = await this.pageRenderer.renderPage(page, config);
+
     this.renderedPages.set(page.id, task);
     this.pageQueue.push(task.render);
 

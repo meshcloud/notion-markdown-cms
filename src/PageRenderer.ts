@@ -6,7 +6,7 @@ import { AssetWriter } from "./AssetWriter";
 import { FrontmatterRenderer } from "./FrontmatterRenderer";
 import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
 import { slugify } from "./slugify";
-import { RenderPageTask as RenderPageTask } from "./RenderedPageTask";
+import { RenderPageTask as RenderPageTask } from "./RenderPageTask";
 import { DatabaseConfig } from "./SyncConfig";
 import { PropertiesParser } from "./PropertiesParser";
 import { logger } from "./logger";
@@ -20,8 +20,12 @@ export class PageRenderer {
     readonly bodyRenderer: RecursiveBodyRenderer
   ) {}
 
-  renderPage(page: Page, config: DatabaseConfig): RenderPageTask {
-    const props = this.propertiesParser.parse(page, config);
+  async renderPage(page: Page, config: DatabaseConfig): Promise<RenderPageTask> {
+    if (page.archived){
+      logger.warn(`rendering archived page ${page.url}`);
+    }
+
+    const props = await this.propertiesParser.parse(page, config);
 
     const categorySlug = slugify(props.meta.category);
     const destDir = `${config.outDir}/${categorySlug}`;

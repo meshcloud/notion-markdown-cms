@@ -1,5 +1,5 @@
 import { DatabaseConfig } from "./SyncConfig";
-import { RenderPageTask } from "./RenderedPageTask";
+import { RenderPageTask } from "./RenderPageTask";
 
 export interface Database {
   config: DatabaseConfig;
