@@ -63,12 +63,13 @@ export class BlockRenderer {
     switch (block.type) {
       case "paragraph":
         return await this.richText.renderMarkdown(block.paragraph.text);
+      // note: render headings +1 level, because h1 is reserved for page titles
       case "heading_1":
-        return "# " + await this.richText.renderMarkdown(block.heading_1.text);
+        return "## " + await this.richText.renderMarkdown(block.heading_1.text);
       case "heading_2":
-        return "## " + await this.richText.renderMarkdown(block.heading_2.text);
+        return "### " + await this.richText.renderMarkdown(block.heading_2.text);
       case "heading_3":
-        return "### " +
+        return "#### " +
           await this.richText.renderMarkdown(block.heading_3.text);
       case "bulleted_list_item":
         return (
