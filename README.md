@@ -18,32 +18,80 @@ Success! 🚀
 
 ### Supported Blocks
 
-| Block Type        | Supported      | Notes                                                 |
-| ----------------- | -------------- | ----------------------------------------------------- |
-| Text              | ✅ Yes         |                                                       |
-| Heading           | ✅ Yes         |                                                       |
-| Image             | ✅ Yes         |                                                       |
-| Image Caption     | ✅ Yes         |                                                       |
-| Bulleted List     | ✅ Yes         |                                                       |
-| Numbered List     | ✅ Yes         |                                                       |
-| Quote             | ✅ Yes         |                                                       |
-| Callout           | ✅ Yes         |                                                       |
-| Toggle            | ❌ Missing     |                                                       |
-| Checkbox          | ?              |                                                       |
-| Column            | ❌ Missing     |                                                       |
-| Embed             | ❌ Missing     |                                                       |
-| Video             | ❌ Missing     |                                                       |
-| Audio             | ❌ Missing     |                                                       |
-| Divider           | ✅ Yes         |                                                       |
-| Link              | ✅ Yes         |                                                       |
-| Code              | ✅ Yes         |                                                       |
-| Web Bookmark      | ✅ Yes         |                                                       |
-| Web Bookmark      | ❌ Missing     |                                                       |
-| Toggle List       | ❌ Missing     |                                                       |
-| Page Links        | ❌ Missing     |                                                       |
-| Databases         | ✅ Yes         | including child pages, inline tables planned          |
-| Child Pages       | ❌ not planned | avoid, they don't mix well with clear site navigation |
-| Table Of Contents | ?              |                                                       |
+The following [Notion API block object types](https://developers.notion.com/reference/block) are supported:
+
+| Block Type        | Supported     | Notes                                                                |
+| ----------------- | ------------- | -------------------------------------------------------------------- |
+| Paragraph         | ✅ Yes         |                                                                      |
+| Heading1-3        | ✅ Yes         |                                                                      |
+| Callout           | ✅ Yes         |                                                                      |
+| Quote             | ✅ Yes         |                                                                      |
+| Bulleted List     | ✅ Yes         |                                                                      |
+| Numbered List     | ✅ Yes         |                                                                      |
+| To do             | ✅ Yes         |                                                                      |
+| Toggle            | ❌ Missing     |                                                                      |
+| Code              | ✅ Yes         |                                                                      |
+| Child Pages       | ❌ not planned | avoid, they don't mix well with clear site navigation                |
+| Child Databases   | ✅ Yes         | renders as table + including child pages, inline-only tables planned |
+| Embed             | ❌ Missing     | unclear, might be undesireable for static sites                      |
+| Image             | ✅ (Yes)       | captions not supported yet                                           |
+| Video             | ❌ Missing     |                                                                      |
+| File              | ❌ Missing     |                                                                      |
+| PDF               | ❌ Missing     |                                                                      |
+| Bookmark          | ❌ Missing     |                                                                      |
+| Equation          | ❌ Missing     |                                                                      |
+| Divider           | ✅ Yes         |                                                                      |
+| Table Of Contents | ❌ not planned | static site generators have their own ToC implementations            |
+| Breadcrumb        | ❌ not planned | static site generators have their own nav implementations            |
+
+Support for other block types can be considered once they are available on the official Notion API.
+
+### Supported Rich Text Formatting
+
+The following [Notion API rich text types](https://developers.notion.com/reference/rich-text) are supported
+
+| Rich Text Type | Supported   | Notes                                            |
+| -------------- | ----------- | ------------------------------------------------ |
+| Text           | ✅ Yes       |                                                  |
+| Mention        | ✅ partially | Page mentions only, mentioned pages are included |
+| Equation       | ❌ Missing   |                                                  |
+
+The following annotations (and any combination thereof) are supported:
+
+| Annotation    | Supported     | Notes                     |
+| ------------- | ------------- | ------------------------- |
+| bold          | ✅ Yes         |                           |
+| italic        | ✅ Yes         |                           |
+| strikethrough | ✅ Yes         |                           |
+| underline     | ✅ Yes         |                           |
+| code          | ✅ Yes         |                           |
+| color         | ❌ not planned | not available in markdown |
+
+### Supported Page Property Types
+
+The following [Notion API page property types](https://developers.notion.com/reference/page#property-value-object) are supported
+
+| Propety type     | Supported | Notes                         |
+| ---------------- | --------- | ----------------------------- |
+| Rich text        | ✅ Yes     | rendered as markdown string   |
+| Number           | ✅ Yes     |                               |
+| Select           | ✅ Yes     | rendered as name              |
+| Multi Select     | ✅ Yes     | rendered as array of names    |
+| Date             | ✅ Yes     | rendered as string            |
+| Formula          | ❌ missing |                               |
+| Relation         | ✅ Yes     | rendered as array of page ids |
+| Rollup           | ❌ missing |                               |
+| Title            | ✅ Yes     | used as page title            |
+| People           | ❌ missing |                               |
+| Files            | ❌ missing |                               |
+| Checkbox         | ❌ missing |                               |
+| Url              | ✅ Yes     | rendered as string            |
+| Email            | ✅ Yes     | rendered as string            |
+| Phone Number     | ✅ Yes     | rendered as string            |
+| Created time     | ✅ Yes     | rendered as string            |
+| Created by       | ✅ Yes     | rendered as name              |
+| Last edited time | ✅ Yes     | rendered as string            |
+| Last edited by   | ✅ Yes     | rendered as name              |
 
 ## Usage
 
@@ -106,8 +154,8 @@ main();
 There are quite a few alternatives out there already, so why did we build `notion-markdown-cms`?
 Below table, albeit subjective, tries to answer this.
 
-| Project                                                                  | Notion API    | Language   | Rendering Engine    | Output looks like    |
-| ------------------------------------------------------------------------ | ------------- | ---------- | ------------------- | -------------------- |
+| Project                                                                  | Notion API   | Language   | Rendering Engine    | Output looks like    |
+| ------------------------------------------------------------------------ | ------------ | ---------- | ------------------- | -------------------- |
 | [Nortion Markdown CMS](https://github.com/meshcloud/notion-markdown-cms) | ✅ official   | TypeScript | Markdown + JS Index | Site generator theme |
 | [Notion2GitHub](https://github.com/narkdown/notion2github)               | ⚠️ unofficial | Python     | Markdown            | Site generator theme |
 | [notion-cms](https://github.com/n6g7/notion-cms)                         | ⚠️ unofficial | TypeScript | React               | Notion App           |
