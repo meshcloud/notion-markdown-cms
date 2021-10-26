@@ -1,15 +1,15 @@
-import * as fsc from "fs";
+import * as fsc from 'fs';
 
-import { Page } from "@notionhq/client/build/src/api-types";
+import { Page } from '@notionhq/client/build/src/api-types';
 
-import { AssetWriter } from "./AssetWriter";
-import { FrontmatterRenderer } from "./FrontmatterRenderer";
-import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
-import { slugify } from "./slugify";
-import { RenderPageTask as RenderPageTask } from "./RenderPageTask";
-import { DatabaseConfig } from "./SyncConfig";
-import { PropertiesParser } from "./PropertiesParser";
-import { logger } from "./logger";
+import { AssetWriter } from './AssetWriter';
+import { FrontmatterRenderer } from './FrontmatterRenderer';
+import { logger } from './logger';
+import { PropertiesParser } from './PropertiesParser';
+import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
+import { RenderPageTask as RenderPageTask } from './RenderPageTask';
+import { slugify } from './slugify';
+import { DatabaseConfig } from './SyncConfig';
 
 const fs = fsc.promises;
 
@@ -25,7 +25,7 @@ export class PageRenderer {
       logger.warn(`rendering archived page ${page.url}`);
     }
 
-    const props = await this.propertiesParser.parse(page, config);
+    const props = await this.propertiesParser.parsePageProperties(page, config);
 
     const categorySlug = slugify(props.meta.category);
     const destDir = `${config.outDir}/${categorySlug}`;

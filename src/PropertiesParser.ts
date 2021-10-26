@@ -1,17 +1,54 @@
-import { Page, PropertyValue } from "@notionhq/client/build/src/api-types";
+import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
 
-import { DatabaseConfig } from "./SyncConfig";
-import { logger } from "./logger";
-import { PageProperties } from "./PageProperties";
-import { RichTextRenderer } from "./RichTextRenderer";
-import { slugify } from "./slugify";
+import { logger } from './logger';
+import { PageProperties } from './PageProperties';
+import { RichTextRenderer } from './RichTextRenderer';
+import { slugify } from './slugify';
+import { DatabaseConfig } from './SyncConfig';
 
 const debug = require("debug")("properties");
+
+export interface ParsedProperties {
+  title: string | null;
+  category: string | null;
+  order: number | undefined;
+  properties: Record<string, any>;
+  keys: Map<string, string>;
+}
 
 export class PropertiesParser {
   constructor(private readonly richText: RichTextRenderer) {}
 
-  public async parse(page: Page, config: DatabaseConfig): Promise<PageProperties> {
+  public async parsePageProperties(
+    page: Page,
+    config: DatabaseConfig,
+  ): Promise<PageProperties> {
+    const { title, category, order, properties, keys } = await this
+      .parseProperties(page, config);
+
+    if (!title) {
+      throw this.errorMissingRequiredProperty("of type 'title'", page);
+    }
+
+    if (!category) {
+      throw this.errorMissingRequiredProperty(config.properties.category, page);
+    }
+
+    return {
+      meta: {
+        id: page.id,
+        url: page.url,
+        title: title, // notion API always calls it name
+        category: category,
+        order: order,
+        ...config.additionalPageFrontmatter,
+      },
+      values: properties,
+      keys: keys,
+    };
+  }
+
+ public async parseProperties(page: Page, config: DatabaseConfig) {
     const properties: Record<string, any> = {};
     const keys = new Map<string, string>();
 
@@ -43,26 +80,15 @@ export class PropertiesParser {
         order = parsedValue;
       }
     }
-
-    if (!title) {
-      throw this.errorMissingRequiredProperty("of type 'title'", page);
-    }
-
-    if (!category) {
-      throw this.errorMissingRequiredProperty(config.properties.category, page);
-    }
-
     return {
-      meta: {
-        id: page.id,
-        url: page.url,
-        title: title, // notion API always calls it name
-        category: category,
-        order: order,
-        ...config.additionalPageFrontmatter,
-      },
-      values: properties,
-      keys: this.sortKeys(config, keys),
+      title,
+      category,
+      order,
+      properties,
+      keys: PropertiesParser.filterIncludedKeys(
+        config.properties.include,
+        keys,
+      ),
     };
   }
 
@@ -109,8 +135,10 @@ export class PropertiesParser {
     }
   }
 
-  private sortKeys(config: DatabaseConfig, keys: Map<string, string>) {
-    const includes = config.properties.include;
+  public static filterIncludedKeys(
+    includes: string[] | undefined,
+    keys: Map<string, string>,
+  ): Map<string, string> {
     if (!includes) {
       return keys;
     }

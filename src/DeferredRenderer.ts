@@ -1,41 +1,33 @@
-import { Page } from "@notionhq/client/build/src/api-types";
-import { DatabaseConfig } from "./SyncConfig";
-import { Database } from "./Database";
-import { DatabaseRenderer } from "./DatabaseRenderer";
-import { logger } from "./logger";
-import { PageRenderer } from "./PageRenderer";
-import { RenderPageTask as RenderPageTask } from "./RenderPageTask";
-import { RenderedPage } from "./RenderedPage";
+import { Page } from '@notionhq/client/build/src/api-types';
+
+import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
+import { logger } from './logger';
+import { PageRenderer } from './PageRenderer';
+import { RenderedPage } from './RenderedPage';
+import { RenderPageTask as RenderPageTask } from './RenderPageTask';
+import { DatabaseConfig } from './SyncConfig';
 
 const debug = require("debug")("rendering");
 
 export class DeferredRenderer {
-  private dbRenderer!: DatabaseRenderer;
+  private dbRenderer!: ChildDatabaseRenderer;
   private pageRenderer!: PageRenderer;
 
   private pageQueue: (() => Promise<any>)[] = [];
 
-  private readonly renderedDatabases = new Map<string, Database>();
   private readonly renderedPages = new Map<string, RenderPageTask>();
 
   public initialize(
-    dbRenderer: DatabaseRenderer,
+    dbRenderer: ChildDatabaseRenderer,
     pageRenderer: PageRenderer
   ) {
     this.dbRenderer = dbRenderer;
     this.pageRenderer = pageRenderer;
   }
 
-  public async renderDatabasePages(databaseId: string): Promise<Database> {
-    const cached = this.renderedDatabases.get(databaseId);
-    if (cached) {
-      debug("db cache hit " + databaseId);
-      return cached;
-    }
-
+  public async renderChildDatabase(databaseId: string): Promise<string> {
     // database pages objects are retrieved immediately, but page bodys are queued for deferred rendering
-    const fetched = await this.dbRenderer.renderDatabase(databaseId);
-    this.renderedDatabases.set(databaseId, fetched);
+    const fetched = await this.dbRenderer.renderChildDatabase(databaseId);
 
     return fetched;
   }

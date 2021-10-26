@@ -1,4 +1,4 @@
-import { Sort } from "@notionhq/client/build/src/api-types";
+import { Sort } from '@notionhq/client/build/src/api-types';
 
 export interface SyncConfig {
   /**
@@ -46,8 +46,6 @@ export interface DatabaseConfig {
    */
   sorts?: Sort[];
 
-  skipMarkdownTable?: boolean;
-
   /**
    * Add custom data to the page frontmatter
    */
@@ -70,4 +68,17 @@ export interface DatabaseConfig {
      */
     include?: string[];
   };
+
+  /**
+   * 
+   */
+  views?: DatabaseView[]
+}
+
+export interface DatabaseView {
+  title: string;
+  properties: {
+    groupBy: string;
+    include?: string[];
+  }
 }

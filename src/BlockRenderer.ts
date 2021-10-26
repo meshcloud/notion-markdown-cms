@@ -1,22 +1,12 @@
 import {
-  Block as PublicBlock,
-  BlockBase,
-  Emoji,
-  File,
-  ExternalFile,
-  ExternalFileWithCaption,
-  FileWithCaption,
-  ImageBlock,
-  RichText,
-} from "@notionhq/client/build/src/api-types";
+    Block as PublicBlock, BlockBase, Emoji, ExternalFile, ExternalFileWithCaption, File,
+    FileWithCaption, ImageBlock, RichText
+} from '@notionhq/client/build/src/api-types';
 
-import * as markdownTable from "./markdown-table";
-import { AssetWriter } from "./AssetWriter";
-import { Database } from "./Database";
-import { DeferredRenderer } from "./DeferredRenderer";
-import { RichTextRenderer } from "./RichTextRenderer";
-import { logger } from "./logger";
-import { LinkRenderer } from "./LinkRenderer";
+import { AssetWriter } from './AssetWriter';
+import { DeferredRenderer } from './DeferredRenderer';
+import { logger } from './logger';
+import { RichTextRenderer } from './RichTextRenderer';
 
 const debug = require("debug")("blocks");
 
@@ -65,9 +55,8 @@ export type Block =
 
 export class BlockRenderer {
   constructor(
-    private readonly deferredRenderer: DeferredRenderer,
     private readonly richText: RichTextRenderer,
-    private readonly linkRenderer: LinkRenderer
+    private readonly deferredRenderer: DeferredRenderer,
   ) {}
 
   async renderBlock(block: Block, assets: AssetWriter): Promise<string> {
@@ -79,14 +68,17 @@ export class BlockRenderer {
       case "heading_2":
         return "## " + await this.richText.renderMarkdown(block.heading_2.text);
       case "heading_3":
-        return "### " + await this.richText.renderMarkdown(block.heading_3.text);
+        return "### " +
+          await this.richText.renderMarkdown(block.heading_3.text);
       case "bulleted_list_item":
         return (
-          "- " + await this.richText.renderMarkdown(block.bulleted_list_item.text)
+          "- " +
+          await this.richText.renderMarkdown(block.bulleted_list_item.text)
         );
       case "numbered_list_item":
         return (
-          "1. " + await this.richText.renderMarkdown(block.numbered_list_item.text)
+          "1. " +
+          await this.richText.renderMarkdown(block.numbered_list_item.text)
         );
       case "to_do":
         return "[ ] " + await this.richText.renderMarkdown(block.to_do.text);
@@ -94,7 +86,8 @@ export class BlockRenderer {
         return await this.renderImage(block, assets);
       case "quote":
         block as any;
-        return "> " + await this.richText.renderMarkdown((block as any).quote.text);
+        return "> " +
+          await this.richText.renderMarkdown((block as any).quote.text);
       case "code":
         return (
           "```" +
@@ -113,17 +106,7 @@ export class BlockRenderer {
       case "divider":
         return "---";
       case "child_database":
-        // queue all pages in the database for individual, deferred rendering
-        const db = await this.deferredRenderer.renderDatabasePages(block.id);
-        const msg = `<!-- included database ${block.id} -->\n`;
-
-        if (db.config.skipMarkdownTable) {
-          return msg;
-        }
-
-        // todo: make this nicer, e.g. render multi tables
-        return msg + this.renderTables(db);
-
+        return await this.deferredRenderer.renderChildDatabase(block.id);
       case "toggle":
       case "child_page":
       case "embed":
@@ -136,33 +119,9 @@ export class BlockRenderer {
       default:
         return this.renderUnsupported(
           `unsupported block type: ${block.type}`,
-          block
+          block,
         );
     }
-  }
-
-  renderTables(db: Database) {
-    // todo: handle empty page
-    const props = db.pages[0].properties;
-
-    const table: any[][] = [];
-
-    const headers = Array.from(props.keys.keys());
-    table[0] = headers;
-
-    const cols = Array.from(props.keys.values());
-    db.pages.forEach((r) =>
-      table.push(
-        cols.map((c, i) => {
-          const content = escapeTableCell(r.properties.values[c]);
-          return i == 0
-            ? this.linkRenderer.renderPageLink(content, r) // make the first cell a relative link to the page
-            : content;
-        })
-      )
-    );
-
-    return markdownTable.markdownTable(table);
   }
 
   private renderIcon(icon: File | ExternalFile | Emoji): string {
@@ -173,7 +132,7 @@ export class BlockRenderer {
       case "external":
         return this.renderUnsupported(
           `unsupported icon type: ${icon.type}`,
-          icon
+          icon,
         );
     }
   }
@@ -203,13 +162,4 @@ export class BlockRenderer {
 
     return `<!-- ${msg} -->`;
   }
-}
-
-function escapeTableCell(content: string | number | any): string {
-  // markdown table cells do not support newlines, however we can insert <br> elements instead
-  if (typeof content === "string") {
-    return content.replace(/\n/g, "<br>");
-  }
-
-  return content.toString();
 }
