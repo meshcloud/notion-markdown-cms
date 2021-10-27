@@ -73,8 +73,6 @@ export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
      */
     emitToIndex: boolean;
   };
-
-  
 }
 
 export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
@@ -90,8 +88,13 @@ export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
          *
          * Example: "Cluster"
          */
-        property: string;
+        property?: string;
+        /**
+         * A static category value to assign to every page
+         */
+        static?: string;
       };
+
       extra?: Record<string, any>;
     };
   };

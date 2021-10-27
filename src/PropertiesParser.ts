@@ -35,9 +35,11 @@ export class PropertiesParser {
       throw this.errorMissingRequiredProperty("of type 'title'", page);
     }
 
-    if (!category) {
+    const theCategory = category || config.pages.frontmatter.category.static;
+
+    if (!theCategory) {
       throw this.errorMissingRequiredProperty(
-        config.pages.frontmatter.category.property,
+        config.pages.frontmatter.category.property || "static category",
         page
       );
     }
@@ -47,7 +49,7 @@ export class PropertiesParser {
         id: page.id,
         url: page.url,
         title: title, // notion API always calls it name
-        category: category,
+        category: theCategory,
         order: order,
         ...config.pages.frontmatter.extra,
       },
