@@ -1,5 +1,3 @@
-import { promises as fs } from "fs";
-
 import { Client } from "@notionhq/client";
 
 import { BlockRenderer } from "./BlockRenderer";
@@ -62,14 +60,6 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
   await deferredRenderer.process();
 
   const rendered = deferredRenderer.getRenderedPages();
-  await fs.writeFile(
-    config.indexPath,
-    `export const index = ${JSON.stringify(
-      rendered,
-      null,
-      2
-    )};`
-  );
 
   return rendered;
 }

@@ -21,12 +21,6 @@ export interface SyncConfig {
   outDir: string;
 
   /**
-   * The path where the sync will store an index of rendered pages and their properties.
-   * The index is
-   */
-  indexPath: string;
-
-  /**
    * Configuration options for any database encountered while traversing the block graph.
    * This allows you to customize the way the CMS imports the database and its pages.
    */
@@ -69,7 +63,7 @@ export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
 
   entries: {
     /**
-     * Controls whether to emit database entries to the index (see SyncConfig.indexPath)
+     * Controls whether to emit database entries to the index of rendered pages/entries
      */
     emitToIndex: boolean;
   };
