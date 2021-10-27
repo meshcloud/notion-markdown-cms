@@ -1,4 +1,4 @@
-import { Sort } from '@notionhq/client/build/src/api-types';
+import { Sort } from "@notionhq/client/build/src/api-types";
 
 export interface SyncConfig {
   /**
@@ -33,7 +33,11 @@ export interface SyncConfig {
   databases: Record<string, DatabaseConfig>;
 }
 
-export interface DatabaseConfig {
+export type DatabaseConfig =
+  | DatabaseConfigRenderPages
+  | DatabaseConfigRenderTable;
+
+export interface DatabaseConfigBase {
   /**
    * The output directory where the sync will place pages of this database.
    *
@@ -47,21 +51,9 @@ export interface DatabaseConfig {
   sorts?: Sort[];
 
   /**
-   * Add custom data to the page frontmatter
-   */
-  additionalPageFrontmatter?: Record<string, any>;
-
-  /**
    * Configuration options for Notion API page properties
    */
-  properties: {
-    /**
-     * The Notion API page property that provides an optional sub-category value to use for the markdown page category.
-     *
-     * Example: "Cluster"
-     */
-    category: string;
-
+  properties?: {
     /**
      * A whitelist of Notion API page property names to include in the markdown page properties.
      * Use this to select properties for export and control their ordering in rendered tables.
@@ -69,26 +61,60 @@ export interface DatabaseConfig {
     include?: string[];
   };
 
+  renderAs: "table" | "pages+views";
+}
+
+export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
+  renderAs: "table";
+
+  entries: {
+    /**
+     * Controls whether to emit database entries to the index (see SyncConfig.indexPath)
+     */
+    emitToIndex: boolean;
+  };
+
+  
+}
+
+export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
+  renderAs: "pages+views";
   /**
-   * Configure "views" to render on the page where the child_database is encountered. 
+   * Add custom data to the page frontmatter
+   */
+  pages: {
+    frontmatter: {
+      category: {
+        /**
+         * The Notion API page property that provides an optional sub-category value to use for the markdown page category.
+         *
+         * Example: "Cluster"
+         */
+        property: string;
+      };
+      extra?: Record<string, any>;
+    };
+  };
+
+  /**
+   * Configure "views" to render on the page where the child_database is encountered.
    * This allows to render different subsets of columns, groupings etc. to break down large tables.
    * Most useful as a "limited" replacement of more advanced database views, which are not exposed by Notion API
    * and not supported by markdown.
-   * 
-   * Note: 
-   * - When views are defined, child database pages are rendered as individual pages. 
+   *
+   * Note:
+   * - When views are defined, child database pages are rendered as individual pages.
    *   The first column of the view will link to the individual pages.
-   * - When no views are defined, child database pages are rendered as rows in a plain markdown table with all included 
+   * - When no views are defined, child database pages are rendered as rows in a plain markdown table with all included
    *   properties (see DatabaseConfig.properties.include).
-   * 
+   *
    */
-  views?: DatabaseView[]
+  views: DatabaseView[];
 }
-
 export interface DatabaseView {
   title: string;
   properties: {
     groupBy: string;
     include?: string[];
-  }
+  };
 }

@@ -7,7 +7,7 @@ import { Database } from "./Database";
 import { DatabaseViewRenderer } from "./DatabaseViewRenderer";
 import { DeferredRenderer } from "./DeferredRenderer";
 import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { DatabaseConfig } from "./SyncConfig";
+import { DatabaseConfig, DatabaseConfigRenderPages, DatabaseConfigRenderTable } from "./SyncConfig";
 import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
 
 export class ChildDatabaseRenderer {
@@ -26,11 +26,12 @@ export class ChildDatabaseRenderer {
     const allPages = await this.fetchPages(databaseId, dbConfig);
 
     const isCmsDb = this.config.cmsDatabaseId === databaseId;
-    const renderPages = isCmsDb || dbConfig.views;
+    const renderPages = isCmsDb || dbConfig.renderAs === "pages+views"
 
     if (renderPages) {
-      const entries = await this.queuePageRendering(allPages, dbConfig);
-      const markdown = await this.viewRenderer.renderViews(entries, dbConfig);
+      const pageConfig = dbConfig as DatabaseConfigRenderPages;
+      const entries = await this.queuePageRendering(allPages, pageConfig);
+      const markdown = await this.viewRenderer.renderViews(entries, dbConfig as DatabaseConfigRenderPages);
 
       return {
         config: dbConfig,
@@ -51,7 +52,7 @@ export class ChildDatabaseRenderer {
 
   private async queueEntryRendering(
     allPages: Page[],
-    dbConfig: DatabaseConfig
+    dbConfig: DatabaseConfigRenderTable
   ) {
     const prepareRenderEntryTasks = allPages.map((x) =>
       this.deferredRenderer.renderEntry(x, dbConfig)
@@ -63,7 +64,7 @@ export class ChildDatabaseRenderer {
 
   private async queuePageRendering(
     allPages: Page[],
-    dbConfig: DatabaseConfig
+    dbConfig: DatabaseConfigRenderPages
   ): Promise<RenderDatabasePageTask[]> {
     const prepareRenderPageTasks = allPages.map((x) =>
       this.deferredRenderer.renderPage(x, dbConfig)

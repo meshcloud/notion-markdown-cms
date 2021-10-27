@@ -1,10 +1,10 @@
-import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
+import { Page, PropertyValue } from "@notionhq/client/build/src/api-types";
 
-import { logger } from './logger';
-import { PageProperties } from './PageProperties';
-import { RichTextRenderer } from './RichTextRenderer';
-import { slugify } from './slugify';
-import { DatabaseConfig } from './SyncConfig';
+import { logger } from "./logger";
+import { PageProperties } from "./PageProperties";
+import { RichTextRenderer } from "./RichTextRenderer";
+import { slugify } from "./slugify";
+import { DatabaseConfig, DatabaseConfigRenderPages } from "./SyncConfig";
 
 const debug = require("debug")("properties");
 
@@ -21,17 +21,25 @@ export class PropertiesParser {
 
   public async parsePageProperties(
     page: Page,
-    config: DatabaseConfig,
+    config: DatabaseConfigRenderPages
   ): Promise<PageProperties> {
-    const { title, category, order, properties, keys } = await this
-      .parseProperties(page, config);
+    const {
+      title,
+      category,
+      order,
+      properties,
+      keys,
+    } = await this.parseProperties(page, config);
 
     if (!title) {
       throw this.errorMissingRequiredProperty("of type 'title'", page);
     }
 
     if (!category) {
-      throw this.errorMissingRequiredProperty(config.properties.category, page);
+      throw this.errorMissingRequiredProperty(
+        config.pages.frontmatter.category.property,
+        page
+      );
     }
 
     return {
@@ -41,14 +49,19 @@ export class PropertiesParser {
         title: title, // notion API always calls it name
         category: category,
         order: order,
-        ...config.additionalPageFrontmatter,
+        ...config.pages.frontmatter.extra,
       },
       values: properties,
       keys: keys,
     };
   }
 
- public async parseProperties(page: Page, config: DatabaseConfig) {
+  public async parseProperties(page: Page, config: DatabaseConfig) {
+    /**
+     * Design: we always lookup the properties opn the page object itself.
+     * This way we only parse properties once and avoid any problems coming from
+     * e.g. category properties being filtered via include filters.
+     */
     const properties: Record<string, any> = {};
     const keys = new Map<string, string>();
 
@@ -56,11 +69,15 @@ export class PropertiesParser {
     let category: string | null = null;
     let order: number | undefined = undefined;
 
+    const categoryProperty =
+      config.renderAs === "pages+views" &&
+      config.pages.frontmatter.category.property;
+
     for (const [name, value] of Object.entries(page.properties)) {
       const parsedValue = await this.parsePropertyValue(value);
 
       if (
-        !config.properties.include ||
+        !config.properties?.include ||
         config.properties.include.indexOf(name) >= 0
       ) {
         const slug = slugify(name);
@@ -72,7 +89,7 @@ export class PropertiesParser {
         title = parsedValue;
       }
 
-      if (name === config.properties.category) {
+      if (categoryProperty && name === categoryProperty) {
         category = parsedValue;
       }
 
@@ -86,8 +103,8 @@ export class PropertiesParser {
       order,
       properties,
       keys: PropertiesParser.filterIncludedKeys(
-        config.properties.include,
-        keys,
+        config.properties?.include,
+        keys
       ),
     };
   }
@@ -137,7 +154,7 @@ export class PropertiesParser {
 
   public static filterIncludedKeys(
     includes: string[] | undefined,
-    keys: Map<string, string>,
+    keys: Map<string, string>
   ): Map<string, string> {
     if (!includes) {
       return keys;

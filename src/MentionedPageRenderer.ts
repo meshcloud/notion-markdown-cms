@@ -25,6 +25,12 @@ export class MentionedPageRenderer {
 
     const dbConfig = lookupDatabaseConfig(this.config, databaseId);
 
+    if (dbConfig.renderAs !== "pages+views") {
+      throw new Error(
+        `Encountered page mention for page ${pageId}, but the mentioned page is not part of a database configured to render as 'pages+views'`
+      );
+    }
+
     return this.deferredRenderer.renderPage(page, dbConfig);
   }
 

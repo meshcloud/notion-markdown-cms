@@ -2,7 +2,7 @@ import { LinkRenderer } from "./LinkRenderer";
 import * as markdownTable from "./markdown-table";
 import { PropertiesParser } from "./PropertiesParser";
 import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { DatabaseConfig, DatabaseView } from "./SyncConfig";
+import { DatabaseConfigRenderPages, DatabaseView } from "./SyncConfig";
 import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
 
 const debug = require("debug")("database");
@@ -11,7 +11,7 @@ const debug = require("debug")("database");
 export class DatabaseViewRenderer {
   constructor(private readonly linkRenderer: LinkRenderer) {}
 
-  public renderViews(entries: RenderDatabasePageTask[], config: DatabaseConfig): string {
+  public renderViews(entries: RenderDatabasePageTask[], config: DatabaseConfigRenderPages): string {
     const views = config.views?.map((view) => {
       const propKeys = entries[0].properties.keys;
       const propKey = propKeys.get(view.properties.groupBy);

@@ -1,15 +1,15 @@
-import * as fsc from 'fs';
+import * as fsc from "fs";
 
-import { Page } from '@notionhq/client/build/src/api-types';
+import { Page } from "@notionhq/client/build/src/api-types";
 
-import { AssetWriter } from './AssetWriter';
-import { FrontmatterRenderer } from './FrontmatterRenderer';
-import { logger } from './logger';
-import { PropertiesParser } from './PropertiesParser';
-import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
+import { AssetWriter } from "./AssetWriter";
+import { FrontmatterRenderer } from "./FrontmatterRenderer";
+import { logger } from "./logger";
+import { PropertiesParser } from "./PropertiesParser";
+import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
 import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { slugify } from './slugify';
-import { DatabaseConfig } from './SyncConfig';
+import { slugify } from "./slugify";
+import { DatabaseConfigRenderPages } from "./SyncConfig";
 
 const fs = fsc.promises;
 
@@ -20,8 +20,11 @@ export class DatabasePageRenderer {
     readonly bodyRenderer: RecursiveBodyRenderer
   ) {}
 
-  async renderPage(page: Page, config: DatabaseConfig): Promise<RenderDatabasePageTask> {
-    if (page.archived){
+  async renderPage(
+    page: Page,
+    config: DatabaseConfigRenderPages
+  ): Promise<RenderDatabasePageTask> {
+    if (page.archived) {
       logger.warn(`rendering archived page ${page.url}`);
     }
 

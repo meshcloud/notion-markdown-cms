@@ -7,7 +7,10 @@ import { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
 import { RenderedDatabasePage } from "./RenderedDatabasePage";
 import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
-import { DatabaseConfig } from "./SyncConfig";
+import {
+  DatabaseConfigRenderPages,
+  DatabaseConfigRenderTable,
+} from "./SyncConfig";
 import { Database } from "./Database";
 import { DatabaseEntryRenderer } from "./DatabaseEntryRenderer";
 
@@ -39,7 +42,7 @@ export class DeferredRenderer {
 
   public async renderPage(
     page: Page,
-    config: DatabaseConfig
+    config: DatabaseConfigRenderPages
   ): Promise<RenderDatabasePageTask> {
     // cache to avoid rendering the same page twice, e.g. when it is linked multiple times
     const cached = this.renderedPages.get(page.id);
@@ -58,7 +61,7 @@ export class DeferredRenderer {
 
   public async renderEntry(
     page: Page,
-    config: DatabaseConfig
+    config: DatabaseConfigRenderTable
   ): Promise<RenderDatabaseEntryTask> {
     const task = await this.entryRenderer.renderEntry(page, config);
 
