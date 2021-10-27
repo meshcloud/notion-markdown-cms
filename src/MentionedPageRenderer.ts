@@ -1,7 +1,7 @@
 import { APIErrorCode, Client } from "@notionhq/client";
 import { DeferredRenderer } from "./DeferredRenderer";
 import { SyncConfig } from ".";
-import { RenderPageTask } from "./RenderPageTask";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { lookupDatabaseConfig } from "./config";
 
 export class MentionedPageRenderer {
@@ -11,7 +11,7 @@ export class MentionedPageRenderer {
     readonly config: SyncConfig
   ) {}
 
-  async renderPage(pageId: string): Promise<RenderPageTask | null> {
+  async renderPage(pageId: string): Promise<RenderDatabasePageTask | null> {
     const page = await this.tryFindPage(pageId);
 
     if (!page) {

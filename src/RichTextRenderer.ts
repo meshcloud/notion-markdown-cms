@@ -1,5 +1,5 @@
 import { RichText } from "@notionhq/client/build/src/api-types";
-import { RenderPageTask } from "./RenderPageTask";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { logger } from "./logger";
 import { MentionedPageRenderer } from "./MentionedPageRenderer";
 import { LinkRenderer } from "./LinkRenderer";
@@ -92,7 +92,7 @@ export class RichTextRenderer {
     return mod;
   }
 
-  private async resolveMentionedPage(id: string): Promise<RenderPageTask | null> {
+  private async resolveMentionedPage(id: string): Promise<RenderDatabasePageTask | null> {
     return await this.mentionedPageRenderer.renderPage(id);
   }
 

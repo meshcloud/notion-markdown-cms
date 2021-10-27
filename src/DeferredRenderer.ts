@@ -1,38 +1,47 @@
-import { Page } from '@notionhq/client/build/src/api-types';
+import { Page } from "@notionhq/client/build/src/api-types";
 
-import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
-import { logger } from './logger';
-import { PageRenderer } from './PageRenderer';
-import { RenderedPage } from './RenderedPage';
-import { RenderPageTask as RenderPageTask } from './RenderPageTask';
-import { DatabaseConfig } from './SyncConfig';
+import { ChildDatabaseRenderer } from "./ChildDatabaseRenderer";
+import { logger } from "./logger";
+import { DatabasePageRenderer } from "./DatabasePageRenderer";
+import { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
+import { RenderedDatabasePage } from "./RenderedDatabasePage";
+import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
+import { DatabaseConfig } from "./SyncConfig";
+import { Database } from "./Database";
+import { DatabaseEntryRenderer } from "./DatabaseEntryRenderer";
 
 const debug = require("debug")("rendering");
 
 export class DeferredRenderer {
   private dbRenderer!: ChildDatabaseRenderer;
-  private pageRenderer!: PageRenderer;
+  private pageRenderer!: DatabasePageRenderer;
+  private entryRenderer!: DatabaseEntryRenderer;
 
   private pageQueue: (() => Promise<any>)[] = [];
 
-  private readonly renderedPages = new Map<string, RenderPageTask>();
+  private readonly renderedPages = new Map<string, RenderDatabasePageTask>();
+  private readonly renderedEntries: RenderDatabaseEntryTask[] = [];
 
   public initialize(
     dbRenderer: ChildDatabaseRenderer,
-    pageRenderer: PageRenderer
+    pageRenderer: DatabasePageRenderer,
+    entryRenderer: DatabaseEntryRenderer
   ) {
     this.dbRenderer = dbRenderer;
     this.pageRenderer = pageRenderer;
+    this.entryRenderer = entryRenderer;
   }
 
-  public async renderChildDatabase(databaseId: string): Promise<string> {
-    // database pages objects are retrieved immediately, but page bodys are queued for deferred rendering
-    const fetched = await this.dbRenderer.renderChildDatabase(databaseId);
-
-    return fetched;
+  public async renderChildDatabase(databaseId: string): Promise<Database> {
+    return await this.dbRenderer.renderChildDatabase(databaseId);
   }
 
-  public async renderPage(page: Page, config: DatabaseConfig): Promise<RenderPageTask> {
+  public async renderPage(
+    page: Page,
+    config: DatabaseConfig
+  ): Promise<RenderDatabasePageTask> {
+    // cache to avoid rendering the same page twice, e.g. when it is linked multiple times
     const cached = this.renderedPages.get(page.id);
     if (cached) {
       debug("page cache hit " + page.id);
@@ -43,6 +52,20 @@ export class DeferredRenderer {
 
     this.renderedPages.set(page.id, task);
     this.pageQueue.push(task.render);
+
+    return task;
+  }
+
+  public async renderEntry(
+    page: Page,
+    config: DatabaseConfig
+  ): Promise<RenderDatabaseEntryTask> {
+    const task = await this.entryRenderer.renderEntry(page, config);
+
+    // entries are complete the moment they are retrieved, there's no more deferred processing necessary on them
+    // also there should be no duplicate entries, so we do not cache/lookup any of them
+
+    this.renderedEntries.push(task);
 
     return task;
   }
@@ -73,11 +96,15 @@ export class DeferredRenderer {
     logger.success("sync complete");
   }
 
-  public getRenderedPages(): RenderedPage[] {
-    return Array.from(this.renderedPages.values()).map((x) => ({
+  public getRenderedPages(): (RenderedDatabasePage | RenderedDatabaseEntry)[] {
+    const pages: (RenderedDatabasePage | RenderedDatabaseEntry)[] = Array.from(
+      this.renderedPages.values()
+    ).map((x) => ({
       file: x.file,
       meta: x.properties.meta,
       properties: x.properties.values,
     }));
+
+    return pages.concat(this.renderedEntries);
   }
 }

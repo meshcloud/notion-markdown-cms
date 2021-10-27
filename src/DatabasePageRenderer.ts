@@ -7,20 +7,20 @@ import { FrontmatterRenderer } from './FrontmatterRenderer';
 import { logger } from './logger';
 import { PropertiesParser } from './PropertiesParser';
 import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
-import { RenderPageTask as RenderPageTask } from './RenderPageTask';
+import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { slugify } from './slugify';
 import { DatabaseConfig } from './SyncConfig';
 
 const fs = fsc.promises;
 
-export class PageRenderer {
+export class DatabasePageRenderer {
   constructor(
     readonly propertiesParser: PropertiesParser,
     readonly frontmatterRenderer: FrontmatterRenderer,
     readonly bodyRenderer: RecursiveBodyRenderer
   ) {}
 
-  async renderPage(page: Page, config: DatabaseConfig): Promise<RenderPageTask> {
+  async renderPage(page: Page, config: DatabaseConfig): Promise<RenderDatabasePageTask> {
     if (page.archived){
       logger.warn(`rendering archived page ${page.url}`);
     }

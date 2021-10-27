@@ -1,5 +1,5 @@
 import { SyncConfig } from "./SyncConfig";
 import { sync } from "./sync";
-import { RenderedPage } from "./RenderedPage";
+import { RenderedDatabasePage } from "./RenderedDatabasePage";
 
-export { SyncConfig, RenderedPage, sync };
+export { SyncConfig, RenderedDatabasePage as RenderedPage, sync };

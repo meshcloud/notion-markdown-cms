@@ -1,6 +1,7 @@
 import { PageProperties } from "./PageProperties";
 
-export interface RenderPageTask {
+
+export interface RenderDatabasePageTask {
     id: string;
     file: string;
     properties: PageProperties;

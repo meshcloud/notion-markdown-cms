@@ -1,7 +1,9 @@
 import { DatabaseConfig } from "./SyncConfig";
-import { RenderPageTask } from "./RenderPageTask";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
 
 export interface Database {
   config: DatabaseConfig;
-  pages: RenderPageTask[];
+  entries: (RenderDatabaseEntryTask | RenderDatabasePageTask)[];
+  markdown: string;
 }

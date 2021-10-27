@@ -1,35 +1,73 @@
-import { Database } from './Database';
-import { TableRenderer } from './TableRenderer';
+import { LinkRenderer } from "./LinkRenderer";
+import * as markdownTable from "./markdown-table";
+import { PropertiesParser } from "./PropertiesParser";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { DatabaseConfig, DatabaseView } from "./SyncConfig";
+import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
 
 const debug = require("debug")("database");
 
+// todo: name afte what it renders, not to where
 export class DatabaseViewRenderer {
-  constructor(
-    private readonly tableRenderer: TableRenderer,
-  ) {}
+  constructor(private readonly linkRenderer: LinkRenderer) {}
 
-  renderViews(db: Database): string {
-    const views = db.config.views?.map((view) => {
-      const propKeys = db.pages[0].properties.keys;
+  public renderViews(entries: RenderDatabasePageTask[], config: DatabaseConfig): string {
+    const views = config.views?.map((view) => {
+      const propKeys = entries[0].properties.keys;
       const propKey = propKeys.get(view.properties.groupBy);
 
       if (!propKey) {
-        const msg =
-          `Could not render view ${view.title}, groupBy property ${view.properties.groupBy} not found`;
+        const msg = `Could not render view ${view.title}, groupBy property ${view.properties.groupBy} not found`;
         debug(msg + "%O", view);
         throw new Error(msg);
       }
 
       const grouped = new Array(
-        ...groupBy(db.pages, (p) => p.properties.values[propKey]),
+        ...groupBy(entries, (p) => p.properties.values[propKey])
       );
 
       return grouped
-        .map(([key, pages]) => this.tableRenderer.renderView(pages, key, view))
+        .map(([key, pages]) => this.renderView(pages, key, view))
         .join("\n\n");
     });
 
     return views?.join("\n\n") || "";
+  }
+
+  public renderView(
+    pages: RenderDatabasePageTask[],
+    titleAppendix: string,
+    view: DatabaseView
+  ): string {
+    // todo: handle empty page
+    const props = pages[0].properties;
+
+    const keys = PropertiesParser.filterIncludedKeys(
+      view.properties.include,
+      props.keys
+    );
+
+    const table: any[][] = [];
+
+    const headers = Array.from(keys.keys());
+    table[0] = headers;
+
+    const cols = Array.from(keys.values());
+    pages.forEach((r) =>
+      table.push(
+        cols.map((c, i) => {
+          const content = DatabaseTableRenderer.escapeTableCell(r.properties.values[c]);
+          return i == 0
+            ? this.linkRenderer.renderPageLink(content, r) // make the first cell a relative link to the page
+            : content;
+        })
+      )
+    );
+
+    return (
+      `## ${view.title} - ${titleAppendix}\n\n` +
+      markdownTable.markdownTable(table)
+    );
   }
 }
 
@@ -46,7 +84,7 @@ export class DatabaseViewRenderer {
  */
 export function groupBy<K, V>(
   list: Array<V>,
-  keyGetter: (input: V) => K,
+  keyGetter: (input: V) => K
 ): Map<K, Array<V>> {
   const map = new Map<K, Array<V>>();
   list.forEach((item) => {

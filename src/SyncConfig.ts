@@ -70,6 +70,16 @@ export interface DatabaseConfig {
   };
 
   /**
+   * Configure "views" to render on the page where the child_database is encountered. 
+   * This allows to render different subsets of columns, groupings etc. to break down large tables.
+   * Most useful as a "limited" replacement of more advanced database views, which are not exposed by Notion API
+   * and not supported by markdown.
+   * 
+   * Note: 
+   * - When views are defined, child database pages are rendered as individual pages. 
+   *   The first column of the view will link to the individual pages.
+   * - When no views are defined, child database pages are rendered as rows in a plain markdown table with all included 
+   *   properties (see DatabaseConfig.properties.include).
    * 
    */
   views?: DatabaseView[]

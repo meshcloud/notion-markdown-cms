@@ -1,12 +1,19 @@
 import {
-    Block as PublicBlock, BlockBase, Emoji, ExternalFile, ExternalFileWithCaption, File,
-    FileWithCaption, ImageBlock, RichText
-} from '@notionhq/client/build/src/api-types';
+  Block as PublicBlock,
+  BlockBase,
+  Emoji,
+  ExternalFile,
+  ExternalFileWithCaption,
+  File,
+  FileWithCaption,
+  ImageBlock,
+  RichText,
+} from "@notionhq/client/build/src/api-types";
 
-import { AssetWriter } from './AssetWriter';
-import { DeferredRenderer } from './DeferredRenderer';
-import { logger } from './logger';
-import { RichTextRenderer } from './RichTextRenderer';
+import { AssetWriter } from "./AssetWriter";
+import { DeferredRenderer } from "./DeferredRenderer";
+import { logger } from "./logger";
+import { RichTextRenderer } from "./RichTextRenderer";
 
 const debug = require("debug")("blocks");
 
@@ -56,7 +63,7 @@ export type Block =
 export class BlockRenderer {
   constructor(
     private readonly richText: RichTextRenderer,
-    private readonly deferredRenderer: DeferredRenderer,
+    private readonly deferredRenderer: DeferredRenderer
   ) {}
 
   async renderBlock(block: Block, assets: AssetWriter): Promise<string> {
@@ -65,36 +72,42 @@ export class BlockRenderer {
         return await this.richText.renderMarkdown(block.paragraph.text);
       // note: render headings +1 level, because h1 is reserved for page titles
       case "heading_1":
-        return "## " + await this.richText.renderMarkdown(block.heading_1.text);
+        return (
+          "## " + (await this.richText.renderMarkdown(block.heading_1.text))
+        );
       case "heading_2":
-        return "### " + await this.richText.renderMarkdown(block.heading_2.text);
+        return (
+          "### " + (await this.richText.renderMarkdown(block.heading_2.text))
+        );
       case "heading_3":
-        return "#### " +
-          await this.richText.renderMarkdown(block.heading_3.text);
+        return (
+          "#### " + (await this.richText.renderMarkdown(block.heading_3.text))
+        );
       case "bulleted_list_item":
         return (
           "- " +
-          await this.richText.renderMarkdown(block.bulleted_list_item.text)
+          (await this.richText.renderMarkdown(block.bulleted_list_item.text))
         );
       case "numbered_list_item":
         return (
           "1. " +
-          await this.richText.renderMarkdown(block.numbered_list_item.text)
+          (await this.richText.renderMarkdown(block.numbered_list_item.text))
         );
       case "to_do":
-        return "[ ] " + await this.richText.renderMarkdown(block.to_do.text);
+        return "[ ] " + (await this.richText.renderMarkdown(block.to_do.text));
       case "image":
         return await this.renderImage(block, assets);
       case "quote":
         block as any;
-        return "> " +
-          await this.richText.renderMarkdown((block as any).quote.text);
+        return (
+          "> " + (await this.richText.renderMarkdown((block as any).quote.text))
+        );
       case "code":
         return (
           "```" +
           block.code.language +
           "\n" +
-          await this.richText.renderMarkdown(block.code.text) +
+          (await this.richText.renderMarkdown(block.code.text)) +
           "\n```"
         );
       case "callout":
@@ -102,12 +115,14 @@ export class BlockRenderer {
           "> " +
           this.renderIcon(block.callout.icon) +
           " " +
-          await this.richText.renderMarkdown(block.callout.text)
+          (await this.richText.renderMarkdown(block.callout.text))
         );
       case "divider":
         return "---";
       case "child_database":
-        return await this.deferredRenderer.renderChildDatabase(block.id);
+        const msg = `<!-- included database ${block.id} -->\n`;
+        const db = await this.deferredRenderer.renderChildDatabase(block.id);
+        return msg + db.markdown;
       case "toggle":
       case "child_page":
       case "embed":
@@ -120,7 +135,7 @@ export class BlockRenderer {
       default:
         return this.renderUnsupported(
           `unsupported block type: ${block.type}`,
-          block,
+          block
         );
     }
   }
@@ -133,7 +148,7 @@ export class BlockRenderer {
       case "external":
         return this.renderUnsupported(
           `unsupported icon type: ${icon.type}`,
-          icon,
+          icon
         );
     }
   }
