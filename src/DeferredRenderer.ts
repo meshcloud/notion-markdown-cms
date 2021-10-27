@@ -67,8 +67,9 @@ export class DeferredRenderer {
 
     // entries are complete the moment they are retrieved, there's no more deferred processing necessary on them
     // also there should be no duplicate entries, so we do not cache/lookup any of them
-
-    this.renderedEntries.push(task);
+    if (config.entries.emitToIndex) {
+      this.renderedEntries.push(task);
+    }
 
     return task;
   }
@@ -108,6 +109,14 @@ export class DeferredRenderer {
       properties: x.properties.values,
     }));
 
-    return pages.concat(this.renderedEntries);
+    const entries: RenderedDatabaseEntry[] = this.renderedEntries.map((x) => ({
+      meta: {
+        id: x.id,
+        url: x.url,
+      },
+      properties: x.properties.values,
+    }));
+
+    return pages.concat(entries);
   }
 }

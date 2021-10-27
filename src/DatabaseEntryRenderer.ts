@@ -15,6 +15,7 @@ export class DatabaseEntryRenderer {
 
     return {
       id: page.id,
+      url: page.url,
       properties: {
         keys: props.keys,
         values: props.properties,

@@ -1,6 +1,7 @@
 
 export interface RenderDatabaseEntryTask {
     id: string;
+    url: string;
     properties: {
         /**
          * A mapping of property object keys -> property values
