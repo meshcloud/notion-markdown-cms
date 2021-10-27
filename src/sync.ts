@@ -46,7 +46,7 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
     frontmatterRenderer,
     bodyRenderer
   );
-  
+
   const dbRenderer = new ChildDatabaseRenderer(
     config,
     publicApi,
@@ -61,12 +61,15 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
   await deferredRenderer.renderChildDatabase(config.cmsDatabaseId);
   await deferredRenderer.process();
 
+  const rendered = deferredRenderer.getRenderedPages();
   await fs.writeFile(
     config.indexPath,
     `export const index = ${JSON.stringify(
-      deferredRenderer.getRenderedPages(),
+      rendered,
       null,
       2
     )};`
   );
+
+  return rendered;
 }
