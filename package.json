@@ -4,7 +4,10 @@
   "engines": {
     "node": "^14"
   },
-  "repository": "git@github.com:meshcloud/cloudfoundation.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meshcloud/notion-markdown-cms.git"
+  },
   "author": "Johannes Rudolph <jrudolph@meshcloud.io>",
   "license": "MIT",
   "publishConfig": {
