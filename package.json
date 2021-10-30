@@ -10,9 +10,6 @@
   },
   "author": "Johannes Rudolph <jrudolph@meshcloud.io>",
   "license": "MIT",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@meshcloud"
-  },
   "main": "dist/index.js",
   "files": [
     "dist",
