@@ -1,7 +1,8 @@
-import { Page } from "@notionhq/client/build/src/api-types";
-import { PropertiesParser } from "./PropertiesParser";
-import { RichTextRenderer } from "./RichTextRenderer";
-import { DatabaseConfig } from "./SyncConfig";
+import { Page } from '@notionhq/client/build/src/api-types';
+
+import { PropertiesParser } from './PropertiesParser';
+import { RichTextRenderer } from './RichTextRenderer';
+import { DatabaseConfig } from './SyncConfig';
 
 const page: Partial<Page> = {
   id: "123",
@@ -35,31 +36,28 @@ describe("PropertiesParser", () => {
   describe("parse", () => {
 
     test("preserves all properties and adds conventional with no include filter", async () => {
-      const sut = new PropertiesParser(new RichTextRenderer());
+      const sut = new PropertiesParser(new RichTextRenderer({} as any, {} as any));
 
       const config: DatabaseConfig = {
         outDir: "db/",
-        properties: {
-          category: "Category",
-        },
+        renderAs: 'table',
+        entries: {
+          emitToIndex: false
+        }
       };
 
-      const result = sut.parse(page as any, config);
+      const result = await sut.parseProperties(page as any, config);
 
       const expected = {
-        meta: {
-          category: "Tools",
-          id: "123",
-          title: "Terraform",
-          url: "http://example.com/123",
-          order: 30
-        },
+        category: null,
+        order: 30,
+        title: "Terraform",
         keys: new Map([
           ["order", "order"],
           ["Category", "category"],
           ["Name", "name"],
         ]),
-        values: {
+        properties: {
           order: 30,
           category: "Tools",
           name: "Terraform",
@@ -69,31 +67,30 @@ describe("PropertiesParser", () => {
     });
 
     test("filters according to include filter", async () => {
-      const sut = new PropertiesParser(new RichTextRenderer());
+      const sut = new PropertiesParser(new RichTextRenderer({} as any, {} as any));
 
       const config: DatabaseConfig = {
         outDir: "db/",
+        renderAs: "table",
         properties: {
-          category: "Category",
           include: ["Name", "Category"],
         },
+        entries: {
+          emitToIndex: false
+        }
       };
 
-      const result = sut.parse(page as any, config);
-
+      const result = await sut.parseProperties(page as any, config);
+      
       const expected = {
-        meta: {
-          category: "Tools",
-          id: "123",
-          title: "Terraform",
-          url: "http://example.com/123",
-          order: 30
-        },
+        category: null,
+        order: 30,
+        title: "Terraform",
         keys: new Map([
-          ["Name", "name"],
           ["Category", "category"],
+          ["Name", "name"],
         ]),
-        values: {
+        properties: {
           category: "Tools",
           name: "Terraform",
         },
