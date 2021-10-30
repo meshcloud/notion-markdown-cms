@@ -1,5 +1,8 @@
 # Notion Markdown CMS
 
+[![npm](https://badgen.net/npm/v/@meshcloud/notion-markdown-cms)](https://www.npmjs.com/package/@meshcloud/notion-markdown-cms)
+[![license](https://badgen.net/github/license/meshcloud/notion-markdown-cms)](https://github.com/meshcloud/notion-markdown-cms/blob/main/LICENSE)
+
 Build markdown-based static sites with Notion.
 
 1. Use Notion to write and organize pages
