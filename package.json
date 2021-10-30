@@ -1,13 +1,16 @@
 {
-  "name": "notion-markdown-cms",
   "version": "0.1.0",
+  "name": "@meshcloud/notion-markdown-cms",
   "engines": {
     "node": "^14"
   },
-  "main": "dist/index.js",
   "repository": "git@github.com:meshcloud/cloudfoundation.git",
   "author": "Johannes Rudolph <jrudolph@meshcloud.io>",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "main": "dist/index.js",
   "files": [
     "dist",
     "package.json",
