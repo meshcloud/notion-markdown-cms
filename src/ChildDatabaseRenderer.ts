@@ -1,14 +1,16 @@
-import { Client } from "@notionhq/client/build/src";
-import { Page } from "@notionhq/client/build/src/api-types";
+import { Client } from '@notionhq/client/build/src';
+import { Page } from '@notionhq/client/build/src/api-types';
 
-import { SyncConfig } from "./";
-import { lookupDatabaseConfig } from "./config";
-import { Database } from "./Database";
-import { DatabaseViewRenderer } from "./DatabaseViewRenderer";
-import { DeferredRenderer } from "./DeferredRenderer";
-import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { DatabaseConfig, DatabaseConfigRenderPages, DatabaseConfigRenderTable } from "./SyncConfig";
-import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
+import { SyncConfig } from './';
+import { lookupDatabaseConfig } from './config';
+import { Database } from './Database';
+import { DatabaseTableRenderer } from './DatabaseTableRenderer';
+import { DatabaseViewRenderer } from './DatabaseViewRenderer';
+import { DeferredRenderer } from './DeferredRenderer';
+import { RenderDatabasePageTask } from './RenderDatabasePageTask';
+import { DatabaseConfig, DatabaseConfigRenderPages, DatabaseConfigRenderTable } from './SyncConfig';
+
+const debug = require("debug")("child-database");
 
 export class ChildDatabaseRenderer {
   constructor(
@@ -17,7 +19,7 @@ export class ChildDatabaseRenderer {
     private readonly deferredRenderer: DeferredRenderer,
     private readonly tableRenderer: DatabaseTableRenderer,
     private readonly viewRenderer: DatabaseViewRenderer
-  ) {}
+  ) { }
 
   async renderChildDatabase(databaseId: string): Promise<Database> {
     const dbConfig = lookupDatabaseConfig(this.config, databaseId);
@@ -25,8 +27,9 @@ export class ChildDatabaseRenderer {
     // no view was defined for this database, render as a plain inline table
     const allPages = await this.fetchPages(databaseId, dbConfig);
 
-    const isCmsDb = this.config.cmsDatabaseId === databaseId;
-    const renderPages = isCmsDb || dbConfig.renderAs === "pages+views"
+    const renderPages = dbConfig.renderAs === "pages+views"
+
+    debug("rendering child database " + databaseId + " as " + dbConfig.renderAs);
 
     if (renderPages) {
       const pageConfig = dbConfig as DatabaseConfigRenderPages;

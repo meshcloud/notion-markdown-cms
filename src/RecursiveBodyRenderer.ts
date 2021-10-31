@@ -1,8 +1,10 @@
-import { Client } from "@notionhq/client";
-import { Block, Page } from "@notionhq/client/build/src/api-types";
+import { Client } from '@notionhq/client';
+import { Block, Page } from '@notionhq/client/build/src/api-types';
 
-import { AssetWriter } from "./AssetWriter";
-import { BlockRenderer } from "./BlockRenderer";
+import { AssetWriter } from './AssetWriter';
+import { BlockRenderer } from './BlockRenderer';
+
+const debug = require("debug")("body");
 
 export class RecursiveBodyRenderer {
   constructor(
@@ -14,6 +16,8 @@ export class RecursiveBodyRenderer {
     page: Page,
     assets: AssetWriter
   ): Promise<string> {
+    debug("begin rendering body of page " + page.id, page.properties);
+
     const childs = await this.publicApi.blocks.children.list({
       block_id: page.id,
     });
@@ -24,6 +28,8 @@ export class RecursiveBodyRenderer {
     );
     const blocks = await Promise.all(renderChilds);
     const body = blocks.join("\n\n");
+
+    debug("completed rendering body of page " + page.id);
 
     return body;
   }

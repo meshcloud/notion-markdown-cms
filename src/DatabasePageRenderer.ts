@@ -1,15 +1,16 @@
-import * as fsc from "fs";
+import * as fsc from 'fs';
+import { performance } from 'perf_hooks';
 
-import { Page } from "@notionhq/client/build/src/api-types";
+import { Page } from '@notionhq/client/build/src/api-types';
 
-import { AssetWriter } from "./AssetWriter";
-import { FrontmatterRenderer } from "./FrontmatterRenderer";
-import { logger } from "./logger";
-import { PropertiesParser } from "./PropertiesParser";
-import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
-import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { slugify } from "./slugify";
-import { DatabaseConfigRenderPages } from "./SyncConfig";
+import { AssetWriter } from './AssetWriter';
+import { FrontmatterRenderer } from './FrontmatterRenderer';
+import { logger } from './logger';
+import { PropertiesParser } from './PropertiesParser';
+import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
+import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
+import { slugify } from './slugify';
+import { DatabaseConfigRenderPages } from './SyncConfig';
 
 const fs = fsc.promises;
 
@@ -45,6 +46,8 @@ export class DatabasePageRenderer {
       file,
       properties: props,
       render: async () => {
+        const start = performance.now()
+
         const assetWriter = new AssetWriter(destDir);
 
         const frontmatter = this.frontmatterRenderer.renderFrontmatter(props);
@@ -53,7 +56,10 @@ export class DatabasePageRenderer {
         await fs.mkdir(destDir, { recursive: true });
         await fs.writeFile(file, frontmatter + body);
 
-        logger.info("wrote: " + file);
+        // note: this is excluding the time it takes to fetch properties
+        const elapsed = performance.now() - start;
+        
+        logger.info("rendered: " + file + " in " + Math.round(elapsed) + "ms.");
       },
     };
   }

@@ -1,11 +1,11 @@
-import { LinkRenderer } from "./LinkRenderer";
-import * as markdownTable from "./markdown-table";
-import { PropertiesParser } from "./PropertiesParser";
-import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { DatabaseConfigRenderPages, DatabaseView } from "./SyncConfig";
-import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
+import { DatabaseTableRenderer } from './DatabaseTableRenderer';
+import { LinkRenderer } from './LinkRenderer';
+import * as markdownTable from './markdown-table';
+import { PropertiesParser } from './PropertiesParser';
+import { RenderDatabasePageTask } from './RenderDatabasePageTask';
+import { DatabaseConfigRenderPages, DatabaseView } from './SyncConfig';
 
-const debug = require("debug")("database");
+const debug = require("debug")("database-views");
 
 // todo: name afte what it renders, not to where
 export class DatabaseViewRenderer {

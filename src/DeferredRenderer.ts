@@ -1,18 +1,15 @@
-import { Page } from "@notionhq/client/build/src/api-types";
+import { Page } from '@notionhq/client/build/src/api-types';
 
-import { ChildDatabaseRenderer } from "./ChildDatabaseRenderer";
-import { logger } from "./logger";
-import { DatabasePageRenderer } from "./DatabasePageRenderer";
-import { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
-import { RenderedDatabasePage } from "./RenderedDatabasePage";
-import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
-import {
-  DatabaseConfigRenderPages,
-  DatabaseConfigRenderTable,
-} from "./SyncConfig";
-import { Database } from "./Database";
-import { DatabaseEntryRenderer } from "./DatabaseEntryRenderer";
+import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
+import { Database } from './Database';
+import { DatabaseEntryRenderer } from './DatabaseEntryRenderer';
+import { DatabasePageRenderer } from './DatabasePageRenderer';
+import { logger } from './logger';
+import { RenderDatabaseEntryTask } from './RenderDatabaseEntryTask';
+import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
+import { RenderedDatabaseEntry } from './RenderedDatabaseEntry';
+import { RenderedDatabasePage } from './RenderedDatabasePage';
+import { DatabaseConfigRenderPages, DatabaseConfigRenderTable } from './SyncConfig';
 
 const debug = require("debug")("rendering");
 
