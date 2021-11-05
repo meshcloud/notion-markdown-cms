@@ -43,8 +43,8 @@ export class DatabaseViewRenderer {
     const props = pages[0].properties;
 
     const keys = PropertiesParser.filterIncludedKeys(
+      props.keys,
       view.properties.include,
-      props.keys
     );
 
     const table: any[][] = [];

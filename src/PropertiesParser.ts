@@ -8,16 +8,8 @@ import { DatabaseConfig, DatabaseConfigRenderPages } from './SyncConfig';
 
 const debug = require("debug")("properties");
 
-export interface ParsedProperties {
-  title: string | null;
-  category: string | null;
-  order: number | undefined;
-  properties: Record<string, any>;
-  keys: Map<string, string>;
-}
-
 export class PropertiesParser {
-  constructor(private readonly richText: RichTextRenderer) {}
+  constructor(private readonly richText: RichTextRenderer) { }
 
   public async parsePageProperties(
     page: Page,
@@ -60,14 +52,30 @@ export class PropertiesParser {
 
   public async parseProperties(page: Page, config: DatabaseConfig) {
     /**
-     * Design: we always lookup the properties opn the page object itself.
+     * Design: we always lookup the properties on the page object itself.
      * This way we only parse properties once and avoid any problems coming from
      * e.g. category properties being filtered via include filters.
      */
+
+    /**
+     * Terminology: 
+     * 
+     * property: Notion API property name
+     * key: slugified Notion API property name, used to later build frontmatter
+     * value: Notion API property value
+     */
+
+    /**
+     * A record of key->value
+     */
     const properties: Record<string, any> = {};
+    /**
+     * A map of proprety -> key
+     */
     const keys = new Map<string, string>();
 
     let title: string | null = null;
+    let titleProperty: string | null = null;
     let category: string | null = null;
     let order: number | undefined = undefined;
 
@@ -89,6 +97,7 @@ export class PropertiesParser {
 
       if (value.type === "title") {
         title = parsedValue;
+        titleProperty = name;
       }
 
       if (categoryProperty && name === categoryProperty) {
@@ -99,14 +108,24 @@ export class PropertiesParser {
         order = parsedValue;
       }
     }
+
+    if (!titleProperty) {
+      throw this.errorMissingRequiredProperty("of type 'title'", page);
+    }
+
+    // no explicit ordering specified, so we make sure to put the title property first
+    const includes = config.properties?.include
+      || [titleProperty, ...Array.from(keys.keys()).filter(x => x != titleProperty)];
+
+
     return {
       title,
       category,
       order,
       properties,
       keys: PropertiesParser.filterIncludedKeys(
-        config.properties?.include,
-        keys
+        keys,
+        includes
       ),
     };
   }
@@ -155,8 +174,8 @@ export class PropertiesParser {
   }
 
   public static filterIncludedKeys(
+    keys: Map<string, string>,
     includes: string[] | undefined,
-    keys: Map<string, string>
   ): Map<string, string> {
     if (!includes) {
       return keys;

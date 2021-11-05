@@ -63,7 +63,10 @@ describe("PropertiesParser", () => {
           name: "Terraform",
         },
       };
+
       expect(result).toEqual(expected);
+      // explicitly test key ordering
+      expect(Array.from(result.keys.keys())).toEqual(["Name", "order", "Category"]);
     });
 
     test("filters according to include filter", async () => {
