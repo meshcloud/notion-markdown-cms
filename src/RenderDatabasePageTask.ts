@@ -1,9 +1,8 @@
-import { PageProperties } from "./PageProperties";
-
+import { DatabasePageProperties } from './DatabasePageProperties';
 
 export interface RenderDatabasePageTask {
     id: string;
     file: string;
-    properties: PageProperties;
+    properties: DatabasePageProperties;
     render: () => Promise<any>;
 }

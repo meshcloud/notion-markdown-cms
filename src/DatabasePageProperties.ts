@@ -1,10 +1,10 @@
-import { PageMeta } from "./PageMeta";
+import { DatabasePageMeta } from './DatabasePageMeta';
 
-export interface PageProperties {
+export interface DatabasePageProperties {
   /**
    * Meta information about a Notion API page
    */
-  meta: PageMeta;
+  meta: DatabasePageMeta;
 
   /**
    * A mapping of property object keys -> property values
@@ -16,4 +16,3 @@ export interface PageProperties {
    */
   keys: Map<string, string>;
 }
- 

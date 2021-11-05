@@ -1,10 +1,11 @@
-import * as yaml from "js-yaml";
-import { PageProperties } from "./PageProperties";
+import * as yaml from 'js-yaml';
+
+import { DatabasePageProperties } from './DatabasePageProperties';
 
 export class FrontmatterRenderer {
   constructor() {}
 
-  public renderFrontmatter(props: PageProperties) {
+  public renderFrontmatter(props: DatabasePageProperties) {
     const obj = {
       ...props.meta,
       properties: props.values,

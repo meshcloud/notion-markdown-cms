@@ -1,8 +1,7 @@
-import { PageMeta } from "./PageMeta";
-import { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
-
+import { DatabasePageMeta } from './DatabasePageMeta';
+import { RenderedDatabaseEntry } from './RenderedDatabaseEntry';
 
 export interface RenderedDatabasePage extends RenderedDatabaseEntry {
-  meta: PageMeta;
+  meta: DatabasePageMeta;
   file: string;
 }

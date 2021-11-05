@@ -1,10 +1,10 @@
-import { Page, PropertyValue } from "@notionhq/client/build/src/api-types";
+import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
 
-import { logger } from "./logger";
-import { PageProperties } from "./PageProperties";
-import { RichTextRenderer } from "./RichTextRenderer";
-import { slugify } from "./slugify";
-import { DatabaseConfig, DatabaseConfigRenderPages } from "./SyncConfig";
+import { DatabasePageProperties } from './DatabasePageProperties';
+import { logger } from './logger';
+import { RichTextRenderer } from './RichTextRenderer';
+import { slugify } from './slugify';
+import { DatabaseConfig, DatabaseConfigRenderPages } from './SyncConfig';
 
 const debug = require("debug")("properties");
 
@@ -22,7 +22,7 @@ export class PropertiesParser {
   public async parsePageProperties(
     page: Page,
     config: DatabaseConfigRenderPages
-  ): Promise<PageProperties> {
+  ): Promise<DatabasePageProperties> {
     const {
       title,
       category,
