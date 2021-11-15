@@ -32,7 +32,7 @@ The following [Notion API block object types](https://developers.notion.com/refe
 | Bulleted List     | ✅ Yes         |                                                                      |
 | Numbered List     | ✅ Yes         |                                                                      |
 | To do             | ✅ Yes         |                                                                      |
-| Toggle            | ❌ Missing     |                                                                      |
+| Toggle            | ✅ (Yes)       | Toggle content is included, however the toggle header is not         |
 | Code              | ✅ Yes         |                                                                      |
 | Child Pages       | ❌ not planned | avoid, they don't mix well with clear site navigation                |
 | Child Databases   | ✅ Yes         | renders as table + including child pages, inline-only tables planned |

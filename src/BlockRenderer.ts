@@ -1,19 +1,12 @@
 import {
-  Block as PublicBlock,
-  BlockBase,
-  Emoji,
-  ExternalFile,
-  ExternalFileWithCaption,
-  File,
-  FileWithCaption,
-  ImageBlock,
-  RichText,
-} from "@notionhq/client/build/src/api-types";
+    Block as PublicBlock, BlockBase, Emoji, ExternalFile, ExternalFileWithCaption, File,
+    FileWithCaption, ImageBlock, RichText
+} from '@notionhq/client/build/src/api-types';
 
-import { AssetWriter } from "./AssetWriter";
-import { DeferredRenderer } from "./DeferredRenderer";
-import { logger } from "./logger";
-import { RichTextRenderer } from "./RichTextRenderer";
+import { AssetWriter } from './AssetWriter';
+import { DeferredRenderer } from './DeferredRenderer';
+import { logger } from './logger';
+import { RichTextRenderer } from './RichTextRenderer';
 
 const debug = require("debug")("blocks");
 
@@ -60,69 +53,82 @@ export type Block =
   | DividerBlock
   | ChildDatabaseBlock;
 
+
+export interface BlockRenderResult {
+  lines: string;
+  childIndent?: number;
+}
 export class BlockRenderer {
   constructor(
     private readonly richText: RichTextRenderer,
     private readonly deferredRenderer: DeferredRenderer
-  ) {}
+  ) { }
 
-  async renderBlock(block: Block, assets: AssetWriter): Promise<string> {
+  async renderBlock(block: Block, assets: AssetWriter): Promise<BlockRenderResult> {
     switch (block.type) {
       case "paragraph":
-        return await this.richText.renderMarkdown(block.paragraph.text);
+        return {
+          lines: await this.richText.renderMarkdown(block.paragraph.text)
+        }
       // note: render headings +1 level, because h1 is reserved for page titles
       case "heading_1":
-        return (
-          "## " + (await this.richText.renderMarkdown(block.heading_1.text))
-        );
+        return {
+          lines: "## " + (await this.richText.renderMarkdown(block.heading_1.text))
+        };
       case "heading_2":
-        return (
-          "### " + (await this.richText.renderMarkdown(block.heading_2.text))
-        );
+        return {
+          lines: "### " + (await this.richText.renderMarkdown(block.heading_2.text))
+        };
       case "heading_3":
-        return (
-          "#### " + (await this.richText.renderMarkdown(block.heading_3.text))
-        );
+        return {
+          lines: "#### " + (await this.richText.renderMarkdown(block.heading_3.text))
+        };
       case "bulleted_list_item":
-        return (
-          "- " +
-          (await this.richText.renderMarkdown(block.bulleted_list_item.text))
-        );
+        return {
+          lines: "- " + await this.richText.renderMarkdown(block.bulleted_list_item.text),
+          childIndent: 4
+        };
       case "numbered_list_item":
-        return (
-          "1. " +
-          (await this.richText.renderMarkdown(block.numbered_list_item.text))
-        );
+        return {
+          lines: "1. " + await this.richText.renderMarkdown(block.numbered_list_item.text),
+          childIndent: 4
+        };
       case "to_do":
-        return "[ ] " + (await this.richText.renderMarkdown(block.to_do.text));
+        return {
+          lines: "[ ] " + (await this.richText.renderMarkdown(block.to_do.text))
+        };
       case "image":
-        return await this.renderImage(block, assets);
+        return {
+          lines: await this.renderImage(block, assets)
+        }
       case "quote":
         block as any;
-        return (
-          "> " + (await this.richText.renderMarkdown((block as any).quote.text))
-        );
+        return {
+          lines: "> " + (await this.richText.renderMarkdown((block as any).quote.text))
+        };
       case "code":
-        return (
-          "```" +
-          block.code.language +
-          "\n" +
-          (await this.richText.renderMarkdown(block.code.text)) +
-          "\n```"
-        );
+        return {
+          lines:
+            "```" +
+            block.code.language +
+            "\n" +
+            (await this.richText.renderMarkdown(block.code.text)) +
+            "\n```"
+        };
       case "callout":
-        return (
-          "> " +
-          this.renderIcon(block.callout.icon) +
-          " " +
-          (await this.richText.renderMarkdown(block.callout.text))
-        );
+        return {
+          lines:
+            "> " +
+            this.renderIcon(block.callout.icon) +
+            " " +
+            (await this.richText.renderMarkdown(block.callout.text))
+        };
       case "divider":
-        return "---";
+        return { lines: "---" };
       case "child_database":
         const msg = `<!-- included database ${block.id} -->\n`;
         const db = await this.deferredRenderer.renderChildDatabase(block.id);
-        return msg + db.markdown;
+        return { lines: msg + db.markdown };
       case "toggle":
       case "child_page":
       case "embed":
@@ -133,10 +139,9 @@ export class BlockRenderer {
       case "audio":
       case "unsupported":
       default:
-        return this.renderUnsupported(
-          `unsupported block type: ${block.type}`,
-          block
-        );
+        return {
+          lines: this.renderUnsupported(`unsupported block type: ${block.type}`, block)
+        }
     }
   }
 
