@@ -99,10 +99,10 @@ The following [Notion API page property types](https://developers.notion.com/ref
 ## Usage
 
 At the moment `notion-markdown-cms` is meant to be consumed via its node.js API from build scripts
-wrapping your favourite static site generator tool. Since we're not publishing to npm yet, add it to your project directly from github
+wrapping your favourite static site generator tool. You can install it from npm
 
 ```bash
-npm add "git+ssh://git@github.com:meshcloud/notion-markdown-cms.git#main"
+npm add "@meshcloud/notion-markdown-cms"
 ```
 
 You can find an example build script using the node.js API below.
