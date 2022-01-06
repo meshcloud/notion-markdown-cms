@@ -60,10 +60,17 @@ export class RichTextRenderer {
         }
       // todo: support for mentions is probably useful, for cross-page links?
       case "text":
-        const text = this.wrap(mod, rt.text.content);
-        return rt.text.link
-          ? this.linkRenderer.renderUrlLink(text, rt.text.link.url)
-          : text;
+        // TODO move to above switch statement after upgrading notion client to newest version
+        // switch(rt.mention.type) case: "link_preview" not supported, because types are outdated in @notionhq/client v0.3.x
+        if (rt.text === undefined && rt.href !== undefined) {
+          const link_text = this.wrap(mod, rt.plain_text)
+          return this.linkRenderer.renderUrlLink(link_text, rt.href)
+        } else {
+          const text = this.wrap(mod, rt.text.content);
+          return rt.text.link
+            ? this.linkRenderer.renderUrlLink(text, rt.text.link.url)
+            : text;
+        }
     }
   }
 
