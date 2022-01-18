@@ -23,29 +23,29 @@ Success! 🚀
 
 The following [Notion API block object types](https://developers.notion.com/reference/block) are supported:
 
-| Block Type        | Supported     | Notes                                                                |
-| ----------------- | ------------- | -------------------------------------------------------------------- |
-| Paragraph         | ✅ Yes         |                                                                      |
-| Heading1-3        | ✅ Yes         |                                                                      |
-| Callout           | ✅ Yes         |                                                                      |
-| Quote             | ✅ Yes         |                                                                      |
-| Bulleted List     | ✅ Yes         |                                                                      |
-| Numbered List     | ✅ Yes         |                                                                      |
-| To do             | ✅ Yes         |                                                                      |
-| Toggle            | ✅ (Yes)       | Toggle content is included, however the toggle header is not         |
-| Code              | ✅ Yes         |                                                                      |
-| Child Pages       | ❌ not planned | avoid, they don't mix well with clear site navigation                |
-| Child Databases   | ✅ Yes         | renders as table + including child pages, inline-only tables planned |
-| Embed             | ❌ Missing     | unclear, might be undesireable for static sites                      |
-| Image             | ✅ (Yes)       | captions not supported yet                                           |
-| Video             | ❌ Missing     |                                                                      |
-| File              | ❌ Missing     |                                                                      |
-| PDF               | ❌ Missing     |                                                                      |
-| Bookmark          | ❌ Missing     |                                                                      |
-| Equation          | ❌ Missing     |                                                                      |
-| Divider           | ✅ Yes         |                                                                      |
-| Table Of Contents | ❌ not planned | static site generators have their own ToC implementations            |
-| Breadcrumb        | ❌ not planned | static site generators have their own nav implementations            |
+| Block Type        | Supported     | Notes                                                                                                          |
+| ----------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Paragraph         | ✅ Yes         |                                                                                                                |
+| Heading1-3        | ✅ Yes         |                                                                                                                |
+| Callout           | ✅ Yes         |                                                                                                                |
+| Quote             | ✅ Yes         |                                                                                                                |
+| Bulleted List     | ✅ Yes         |                                                                                                                |
+| Numbered List     | ✅ Yes         |                                                                                                                |
+| To do             | ✅ Yes         |                                                                                                                |
+| Toggle            | ✅ (Yes)       | Toggle content is included, however the toggle header is not                                                   |
+| Code              | ✅ Yes         | An html block starting with `<!--notion-markdown-cms:raw-->` is rendered as raw HTML and not as a fenced block |
+| Child Pages       | ❌ not planned | avoid, they don't mix well with clear site navigation                                                          |
+| Child Databases   | ✅ Yes         | renders as table + including child pages, inline-only tables planned                                           |
+| Embed             | ❌ Missing     | unclear, might be undesireable for static sites                                                                |
+| Image             | ✅ (Yes)       | captions not supported yet                                                                                     |
+| Video             | ❌ Missing     |                                                                                                                |
+| File              | ❌ Missing     |                                                                                                                |
+| PDF               | ❌ Missing     |                                                                                                                |
+| Bookmark          | ❌ Missing     |                                                                                                                |
+| Equation          | ❌ Missing     |                                                                                                                |
+| Divider           | ✅ Yes         |                                                                                                                |
+| Table Of Contents | ❌ not planned | static site generators have their own ToC implementations                                                      |
+| Breadcrumb        | ❌ not planned | static site generators have their own nav implementations                                                      |
 
 Support for other block types can be considered once they are available on the official Notion API.
 

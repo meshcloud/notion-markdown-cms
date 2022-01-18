@@ -68,8 +68,8 @@ export class BlockRenderer {
     switch (block.type) {
       case "paragraph":
         return {
-          lines: await this.richText.renderMarkdown(block.paragraph.text)
-        }
+          lines: await this.richText.renderMarkdown(block.paragraph.text),
+        };
       // note: render headings +1 level, because h1 is reserved for page titles
       case "heading_1":
         return {
@@ -107,12 +107,16 @@ export class BlockRenderer {
           lines: "> " + (await this.richText.renderMarkdown((block as any).quote.text))
         };
       case "code":
+        const code = await this.richText.renderPlainText(block.code.text);
+        if (code.startsWith("<!--notion-markdown-cms:raw-->")) {
+          return { lines: code };
+        }
+
         return {
-          lines:
+          lines: 
             "```" +
             block.code.language +
-            "\n" +
-            (await this.richText.renderMarkdown(block.code.text)) +
+            "\n" + code +
             "\n```"
         };
       case "callout":
@@ -121,7 +125,7 @@ export class BlockRenderer {
             "> " +
             this.renderIcon(block.callout.icon) +
             " " +
-            (await this.richText.renderMarkdown(block.callout.text))
+            (await this.richText.renderMarkdown(block.callout.text)),
         };
       case "divider":
         return { lines: "---" };

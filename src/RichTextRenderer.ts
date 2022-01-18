@@ -1,8 +1,9 @@
-import { RichText } from "@notionhq/client/build/src/api-types";
-import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
-import { logger } from "./logger";
-import { MentionedPageRenderer } from "./MentionedPageRenderer";
-import { LinkRenderer } from "./LinkRenderer";
+import { RichText } from '@notionhq/client/build/src/api-types';
+
+import { LinkRenderer } from './LinkRenderer';
+import { logger } from './logger';
+import { MentionedPageRenderer } from './MentionedPageRenderer';
+import { RenderDatabasePageTask } from './RenderDatabasePageTask';
 
 const debug = require("debug")("richtext");
 
@@ -10,8 +11,12 @@ export class RichTextRenderer {
   constructor(
     private readonly mentionedPageRenderer: MentionedPageRenderer,
     private readonly linkRenderer: LinkRenderer
-    ) {}
+  ) {}
 
+  public async renderPlainText(text: RichText[]): Promise<string> {
+    return text.map((rt) => rt.plain_text).join(" ");
+  }
+  
   public async renderMarkdown(text: RichText[]): Promise<string> {
     const result: string[] = [];
 
@@ -99,7 +104,9 @@ export class RichTextRenderer {
     return mod;
   }
 
-  private async resolveMentionedPage(id: string): Promise<RenderDatabasePageTask | null> {
+  private async resolveMentionedPage(
+    id: string
+  ): Promise<RenderDatabasePageTask | null> {
     return await this.mentionedPageRenderer.renderPage(id);
   }
 
@@ -108,7 +115,7 @@ export class RichTextRenderer {
 
     return `${modifier}${content.trim()}${reversedMod}`;
   }
- 
+
   private renderUnsupported(msg: string, obj: any): string {
     logger.warn(msg);
     debug(msg + "\n%O", obj);
