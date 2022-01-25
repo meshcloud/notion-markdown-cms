@@ -122,7 +122,7 @@ export class BlockRenderer {
       case "callout":
         return {
           lines:
-            `> **${this.renderIcon(block.callout.icon)}**" `+ // render emoji as bold, this enables css to target it as `blockquote > strong:first-child`
+            `> **${this.renderIcon(block.callout.icon)}** `+ // render emoji as bold, this enables css to target it as `blockquote > strong:first-child`
             (await this.richText.renderMarkdown(block.callout.text)),
         };
       case "divider":
