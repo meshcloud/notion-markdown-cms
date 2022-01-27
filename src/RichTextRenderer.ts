@@ -7,6 +7,8 @@ import { RenderDatabasePageTask } from './RenderDatabasePageTask';
 
 const debug = require("debug")("richtext");
 
+const trimWhitespaceRegex = /^(\s*)([\s\S]*?)(\s*)$/;
+
 export class RichTextRenderer {
   constructor(
     private readonly mentionedPageRenderer: MentionedPageRenderer,
@@ -16,16 +18,17 @@ export class RichTextRenderer {
   public async renderPlainText(text: RichText[]): Promise<string> {
     return text.map((rt) => rt.plain_text).join(" ");
   }
-  
+
   public async renderMarkdown(text: RichText[]): Promise<string> {
     const result: string[] = [];
 
     for (const rt of text) {
       const code = await this.renderMarkdownCode(rt);
+      // do not push empty code, this can happen e.g.
       result.push(code);
     }
 
-    return result.join(" ");
+    return result.join("");
   }
 
   private async renderMarkdownCode(rt: RichText) {
@@ -63,13 +66,12 @@ export class RichTextRenderer {
               rt
             );
         }
-      // todo: support for mentions is probably useful, for cross-page links?
       case "text":
         // TODO move to above switch statement after upgrading notion client to newest version
         // switch(rt.mention.type) case: "link_preview" not supported, because types are outdated in @notionhq/client v0.3.x
         if (rt.text === undefined && rt.href !== undefined) {
-          const link_text = this.wrap(mod, rt.plain_text)
-          return this.linkRenderer.renderUrlLink(link_text, rt.href)
+          const link_text = this.wrap(mod, rt.plain_text);
+          return this.linkRenderer.renderUrlLink(link_text, rt.href);
         } else {
           const text = this.wrap(mod, rt.text.content);
           return rt.text.link
@@ -111,9 +113,24 @@ export class RichTextRenderer {
   }
 
   private wrap(modifier: string, content: string) {
+    /**
+     * Markdown requires annotated ranges to be trimmed (not starting or ending on whitespace).
+     *
+     * Since notion's rich text allows annotating ranges that include whitespace at the beginning and end,
+     * translating them to markdown requires us to move whitespace "outside" of the modifier.
+     */
     const reversedMod = [...modifier].reverse().join("");
 
-    return `${modifier}${content.trim()}${reversedMod}`;
+    const matchGroups = trimWhitespaceRegex.exec(content);
+    if (!matchGroups) {
+      console.log(matchGroups);
+      throw new Error(
+        `Content failed parsing the whitespace test: '${content}'`
+      );
+    }
+    const [_input, leading, core, trailing] = matchGroups;
+
+    return [leading, modifier, core, reversedMod, trailing].join("");
   }
 
   private renderUnsupported(msg: string, obj: any): string {

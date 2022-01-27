@@ -1,5 +1,5 @@
-import { SyncConfig } from ".";
-import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { SyncConfig } from './';
+import { RenderDatabasePageTask } from './RenderDatabasePageTask';
 
 export class LinkRenderer {
   constructor(private readonly config: SyncConfig) {}
@@ -9,7 +9,7 @@ export class LinkRenderer {
   }
 
   renderPageLink(text: string, page: RenderDatabasePageTask): string {
-    const url = page.file.substr(this.config.outDir.length);
+    const url = page.file.substring(this.config.outDir.length);
 
     return this.renderUrlLink(text, url);
   }
