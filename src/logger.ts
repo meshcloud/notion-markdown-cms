@@ -5,14 +5,6 @@ const info = (...args: any[]): void => {
   console.log(chalk.cyan("info"), ...args);
 };
 
-const tip = (...args: any[]): void => {
-  console.log(chalk.blue("tip"), ...args);
-};
-
-const success = (...args: any[]): void => {
-  console.log(chalk.green("success"), ...args);
-};
-
 const warn = (...args: any[]): void => {
   console.warn(chalk.yellow("warning"), ...args);
 };
@@ -21,10 +13,8 @@ const error = (...args: any[]): void => {
   console.error(chalk.red("error"), ...args);
 };
 
-export const logger = {
+const logger = {
   info,
-  tip,
-  success,
   warn,
   error,
 };

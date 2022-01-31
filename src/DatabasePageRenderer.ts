@@ -4,7 +4,7 @@ import { Page } from '@notionhq/client/build/src/api-types';
 
 import { AssetWriter } from './AssetWriter';
 import { FrontmatterRenderer } from './FrontmatterRenderer';
-import { logger, RenderingLoggingContext } from './logger';
+import { RenderingLoggingContext } from './logger';
 import { PropertiesParser } from './PropertiesParser';
 import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
 import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
@@ -24,10 +24,6 @@ export class DatabasePageRenderer {
     page: Page,
     config: DatabaseConfigRenderPages
   ): Promise<RenderDatabasePageTask> {
-    if (page.archived) {
-      logger.warn(`rendering archived page ${page.url}`);
-    }
-
     const props = await this.propertiesParser.parsePageProperties(page, config);
 
     const categorySlug = slugify(props.meta.category);
@@ -47,15 +43,23 @@ export class DatabasePageRenderer {
       render: async () => {
         const context = new RenderingLoggingContext(page.url, file);
 
+        if (page.archived) {
+          context.warn(`page is arvhied`);
+        }
+
         try {
           const assetWriter = new AssetWriter(destDir);
 
           const frontmatter = this.frontmatterRenderer.renderFrontmatter(props);
-          const body = await this.bodyRenderer.renderBody(page, assetWriter, context);
-  
+          const body = await this.bodyRenderer.renderBody(
+            page,
+            assetWriter,
+            context
+          );
+
           await fs.mkdir(destDir, { recursive: true });
           await fs.writeFile(file, frontmatter + body);
-  
+
           context.complete();
         } catch (error) {
           // While catch-log-throw is usually an antipattern, it is the renderes job to orchestrate the rendering

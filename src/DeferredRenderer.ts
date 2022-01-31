@@ -4,7 +4,6 @@ import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
 import { Database } from './Database';
 import { DatabaseEntryRenderer } from './DatabaseEntryRenderer';
 import { DatabasePageRenderer } from './DatabasePageRenderer';
-import { logger } from './logger';
 import { RenderDatabaseEntryTask } from './RenderDatabaseEntryTask';
 import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
 import { RenderedDatabaseEntry } from './RenderedDatabaseEntry';
@@ -93,8 +92,6 @@ export class DeferredRenderer {
       const promises = batch.map((fn) => fn());
       await Promise.all(promises);
     }
-
-    logger.success("sync complete");
   }
 
   public getRenderedPages(): (RenderedDatabasePage | RenderedDatabaseEntry)[] {
