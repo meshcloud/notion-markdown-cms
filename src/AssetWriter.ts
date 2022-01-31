@@ -13,10 +13,15 @@ export class AssetWriter {
   constructor(readonly dir: string) {}
 
   async store(name: string, buffer: Buffer) {
+    await fs.mkdir(this.dir, { recursive: true });
     await fs.writeFile(`${this.dir}/${name}`, buffer);
   }
 
-  async download(url: string, fileName: string, context: RenderingLoggingContext) {
+  async download(
+    url: string,
+    fileName: string,
+    context: RenderingLoggingContext
+  ) {
     // the got http lib promises to do proper user-agent compliant http caching
     // see https://github.com/sindresorhus/got/blob/main/documentation/cache.md
 
@@ -29,9 +34,8 @@ export class AssetWriter {
     );
     const imageFile = fileName + "." + ext;
 
-    context.info(
-      `downloading (cached: ${response.isFromCache}): ${imageFile}`
-    );
+    const cacheInfo = response.isFromCache ? " (from cache)" : "";
+    context.info(`downloading ${imageFile}` + cacheInfo);
     await this.store(imageFile, response.rawBody);
 
     return imageFile;
