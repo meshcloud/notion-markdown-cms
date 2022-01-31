@@ -1,9 +1,8 @@
 import { RichText } from '@notionhq/client/build/src/api-types';
 
 import { LinkRenderer } from './LinkRenderer';
-import { logger } from './logger';
+import { RenderingLoggingContext } from './logger';
 import { MentionedPageRenderer } from './MentionedPageRenderer';
-import { RenderDatabasePageTask } from './RenderDatabasePageTask';
 
 const debug = require("debug")("richtext");
 
@@ -19,11 +18,14 @@ export class RichTextRenderer {
     return text.map((rt) => rt.plain_text).join(" ");
   }
 
-  public async renderMarkdown(text: RichText[]): Promise<string> {
+  public async renderMarkdown(
+    text: RichText[],
+    context: RenderingLoggingContext
+  ): Promise<string> {
     const result: string[] = [];
 
     for (const rt of text) {
-      const code = await this.renderMarkdownCode(rt);
+      const code = await this.renderMarkdownCode(rt, context);
       // do not push empty code, this can happen e.g.
       result.push(code);
     }
@@ -31,31 +33,26 @@ export class RichTextRenderer {
     return result.join("");
   }
 
-  private async renderMarkdownCode(rt: RichText) {
+  private async renderMarkdownCode(
+    rt: RichText,
+    context: RenderingLoggingContext
+  ) {
     const mod = this.modifier(rt);
 
     switch (rt.type) {
       case "equation":
         return this.renderUnsupported(
           `unsupported rich text type: ${rt.type}`,
-          rt
+          rt,
+          context
         );
       case "mention":
         switch (rt.mention.type) {
           case "page":
-            const page = await this.resolveMentionedPage(rt.mention.page.id);
-            if (!page) {
-              // when we cannot resolve a page link, that usually means
-              // - the page has been deleted/archived and notion's API is not consistently reflecting that
-              // - the API use does not have access to the linked page (e.g. it sits somewhere else in the workspace)
-              // In either the case, the plain_text is not a good fallback in this case as it's typically just"Untitled"
-              // So instead we just render a note to the markdown
-              return this.renderUnsupported(
-                "could not resolve mentioned page " + rt.mention.page.id,
-                rt
-              );
-            }
-
+            const page = await this.mentionedPageRenderer.renderPage(
+              rt.mention.page.id,
+              rt.plain_text
+            );
             const text = this.wrap(mod, page.properties.meta.title);
             return this.linkRenderer.renderPageLink(text, page);
           case "database":
@@ -63,7 +60,8 @@ export class RichTextRenderer {
           case "user":
             return this.renderUnsupported(
               `unsupported rich text mention type: ${rt.mention.type}`,
-              rt
+              rt,
+              context
             );
         }
       case "text":
@@ -106,12 +104,6 @@ export class RichTextRenderer {
     return mod;
   }
 
-  private async resolveMentionedPage(
-    id: string
-  ): Promise<RenderDatabasePageTask | null> {
-    return await this.mentionedPageRenderer.renderPage(id);
-  }
-
   private wrap(modifier: string, content: string) {
     /**
      * Markdown requires annotated ranges to be trimmed (not starting or ending on whitespace).
@@ -133,8 +125,12 @@ export class RichTextRenderer {
     return [leading, modifier, core, reversedMod, trailing].join("");
   }
 
-  private renderUnsupported(msg: string, obj: any): string {
-    logger.warn(msg);
+  private renderUnsupported(
+    msg: string,
+    obj: any,
+    context: RenderingLoggingContext
+  ): string {
+    context.warn(msg);
     debug(msg + "\n%O", obj);
 
     return `<!-- ${msg} -->`;

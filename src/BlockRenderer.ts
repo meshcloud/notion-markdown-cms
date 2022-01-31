@@ -1,9 +1,11 @@
+import { RichText } from '@notionhq/client/build/src/api-types';
+
 import { AssetWriter } from './AssetWriter';
 import {
     Block, Emoji, ExternalFile, ExternalFileWithCaption, File, FileWithCaption, ImageBlock
 } from './Blocks';
 import { DeferredRenderer } from './DeferredRenderer';
-import { logger } from './logger';
+import { RenderingLoggingContext } from './logger';
 import { RichTextRenderer } from './RichTextRenderer';
 
 const debug = require("debug")("blocks");
@@ -20,57 +22,53 @@ export class BlockRenderer {
 
   async renderBlock(
     block: Block,
-    assets: AssetWriter
+    assets: AssetWriter,
+    context: RenderingLoggingContext
   ): Promise<BlockRenderResult> {
+    const renderMarkdown = async (text: RichText[]) => {
+      return await this.richText.renderMarkdown(text, context);
+    };
+
     switch (block.type) {
       case "paragraph":
         return {
-          lines: await this.richText.renderMarkdown(block.paragraph.text),
+          lines: await renderMarkdown(block.paragraph.text),
         };
       // note: render headings +1 level, because h1 is reserved for page titles
       case "heading_1":
         return {
-          lines:
-            "## " + (await this.richText.renderMarkdown(block.heading_1.text)),
+          lines: "## " + (await renderMarkdown(block.heading_1.text)),
         };
       case "heading_2":
         return {
-          lines:
-            "### " + (await this.richText.renderMarkdown(block.heading_2.text)),
+          lines: "### " + (await renderMarkdown(block.heading_2.text)),
         };
       case "heading_3":
         return {
-          lines:
-            "#### " +
-            (await this.richText.renderMarkdown(block.heading_3.text)),
+          lines: "#### " + (await renderMarkdown(block.heading_3.text)),
         };
       case "bulleted_list_item":
         return {
-          lines:
-            "- " +
-            (await this.richText.renderMarkdown(block.bulleted_list_item.text)),
+          lines: "- " + (await renderMarkdown(block.bulleted_list_item.text)),
           childIndent: 4,
         };
       case "numbered_list_item":
         return {
-          lines:
-            "1. " +
-            (await this.richText.renderMarkdown(block.numbered_list_item.text)),
+          lines: "1. " + (await renderMarkdown(block.numbered_list_item.text)),
           childIndent: 4,
         };
       case "to_do":
         return {
-          lines:
-            "[ ] " + (await this.richText.renderMarkdown(block.to_do.text)),
+          lines: "[ ] " + (await renderMarkdown(block.to_do.text)),
         };
       case "image":
         return {
-          lines: await this.renderImage(block, assets),
+          lines: await this.renderImage(block, assets, context),
         };
       case "quote": {
         // it's legal for a notion block to be cmoposed of multiple lines
         // each of them must be prefixed with "> " to be part of the same quote block
-        const content = await this.richText.renderMarkdown(block.quote.text);
+        const content = await renderMarkdown(block.quote.text);
 
         return { lines: this.formatAsQuoteBlock(content) };
       }
@@ -87,8 +85,8 @@ export class BlockRenderer {
       case "callout": {
         // render emoji as bold, this enables css to target it as `blockquote > strong:first-child`
         const content =
-          `**${this.renderIcon(block.callout.icon)}** ` +
-          (await this.richText.renderMarkdown(block.callout.text));
+          `**${this.renderIcon(block.callout.icon, context)}** ` +
+          (await renderMarkdown(block.callout.text));
 
         return {
           lines: this.formatAsQuoteBlock(content),
@@ -113,13 +111,17 @@ export class BlockRenderer {
         return {
           lines: this.renderUnsupported(
             `unsupported block type: ${block.type}`,
-            block
+            block,
+            context
           ),
         };
     }
   }
 
-  private renderIcon(icon: File | ExternalFile | Emoji): string {
+  private renderIcon(
+    icon: File | ExternalFile | Emoji,
+    context: RenderingLoggingContext
+  ): string {
     switch (icon.type) {
       case "emoji":
         return icon.emoji;
@@ -127,15 +129,20 @@ export class BlockRenderer {
       case "external":
         return this.renderUnsupported(
           `unsupported icon type: ${icon.type}`,
-          icon
+          icon,
+          context
         );
     }
   }
 
-  async renderImage(block: ImageBlock, assets: AssetWriter): Promise<string> {
+  async renderImage(
+    block: ImageBlock,
+    assets: AssetWriter,
+    context: RenderingLoggingContext
+  ): Promise<string> {
     const url = this.parseUrl(block.image);
 
-    const imageFile = await assets.download(url, block.id);
+    const imageFile = await assets.download(url, block.id, context);
 
     // todo: caption support
     const markdown = `![image-${block.id}](./${imageFile})`;
@@ -158,8 +165,12 @@ export class BlockRenderer {
       .join("\n");
   }
 
-  private renderUnsupported(msg: string, obj: any): string {
-    logger.warn(msg);
+  private renderUnsupported(
+    msg: string,
+    obj: any,
+    context: RenderingLoggingContext
+  ): string {
+    context.warn(msg);
     debug(msg + "\n%O", obj);
 
     return `<!-- ${msg} -->`;

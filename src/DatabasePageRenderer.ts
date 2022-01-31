@@ -1,11 +1,10 @@
 import * as fsc from 'fs';
-import { performance } from 'perf_hooks';
 
 import { Page } from '@notionhq/client/build/src/api-types';
 
 import { AssetWriter } from './AssetWriter';
 import { FrontmatterRenderer } from './FrontmatterRenderer';
-import { logger } from './logger';
+import { logger, RenderingLoggingContext } from './logger';
 import { PropertiesParser } from './PropertiesParser';
 import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
 import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
@@ -46,20 +45,26 @@ export class DatabasePageRenderer {
       file,
       properties: props,
       render: async () => {
-        const start = performance.now()
+        const context = new RenderingLoggingContext(page.url, file);
 
-        const assetWriter = new AssetWriter(destDir);
+        try {
+          const assetWriter = new AssetWriter(destDir);
 
-        const frontmatter = this.frontmatterRenderer.renderFrontmatter(props);
-        const body = await this.bodyRenderer.renderBody(page, assetWriter);
-
-        await fs.mkdir(destDir, { recursive: true });
-        await fs.writeFile(file, frontmatter + body);
-
-        // note: this is excluding the time it takes to fetch properties
-        const elapsed = performance.now() - start;
-        
-        logger.info("rendered: " + file + " in " + Math.round(elapsed) + "ms.");
+          const frontmatter = this.frontmatterRenderer.renderFrontmatter(props);
+          const body = await this.bodyRenderer.renderBody(page, assetWriter, context);
+  
+          await fs.mkdir(destDir, { recursive: true });
+          await fs.writeFile(file, frontmatter + body);
+  
+          context.complete();
+        } catch (error) {
+          // While catch-log-throw is usually an antipattern, it is the renderes job to orchestrate the rendering
+          // job with concerns like logging and  writing to the outside world. Hence this place is appropriate.
+          // We need to throw the error here so that the rendering process can crash with a proper error message, since
+          // an error at this point here is unrecoverable.
+          context.error(error);
+          throw error;
+        }
       },
     };
   }

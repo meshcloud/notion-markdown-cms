@@ -1,7 +1,7 @@
 import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
 
 import { DatabasePageProperties } from './DatabasePageProperties';
-import { logger } from './logger';
+import { RenderingLoggingContext } from './logger';
 import { RichTextRenderer } from './RichTextRenderer';
 import { slugify } from './slugify';
 import { DatabaseConfig, DatabaseConfigRenderPages } from './SyncConfig';
@@ -9,19 +9,14 @@ import { DatabaseConfig, DatabaseConfigRenderPages } from './SyncConfig';
 const debug = require("debug")("properties");
 
 export class PropertiesParser {
-  constructor(private readonly richText: RichTextRenderer) { }
+  constructor(private readonly richText: RichTextRenderer) {}
 
   public async parsePageProperties(
     page: Page,
     config: DatabaseConfigRenderPages
   ): Promise<DatabasePageProperties> {
-    const {
-      title,
-      category,
-      order,
-      properties,
-      keys,
-    } = await this.parseProperties(page, config);
+    const { title, category, order, properties, keys } =
+      await this.parseProperties(page, config);
 
     if (!title) {
       throw this.errorMissingRequiredProperty("of type 'title'", page);
@@ -58,8 +53,8 @@ export class PropertiesParser {
      */
 
     /**
-     * Terminology: 
-     * 
+     * Terminology:
+     *
      * property: Notion API property name
      * key: slugified Notion API property name, used to later build frontmatter
      * value: Notion API property value
@@ -69,6 +64,7 @@ export class PropertiesParser {
      * A record of key->value
      */
     const properties: Record<string, any> = {};
+
     /**
      * A map of proprety -> key
      */
@@ -83,8 +79,10 @@ export class PropertiesParser {
       config.renderAs === "pages+views" &&
       config.pages.frontmatter.category.property;
 
+    const context = new RenderingLoggingContext(page.url);
+
     for (const [name, value] of Object.entries(page.properties)) {
-      const parsedValue = await this.parsePropertyValue(value);
+      const parsedValue = await this.parsePropertyValue(value, context);
 
       if (
         !config.properties?.include ||
@@ -114,30 +112,31 @@ export class PropertiesParser {
     }
 
     // no explicit ordering specified, so we make sure to put the title property first
-    const includes = config.properties?.include
-      || [titleProperty, ...Array.from(keys.keys()).filter(x => x != titleProperty)];
-
+    const includes = config.properties?.include || [
+      titleProperty,
+      ...Array.from(keys.keys()).filter((x) => x != titleProperty),
+    ];
 
     return {
       title,
       category,
       order,
       properties,
-      keys: PropertiesParser.filterIncludedKeys(
-        keys,
-        includes
-      ),
+      keys: PropertiesParser.filterIncludedKeys(keys, includes),
     };
   }
 
-  private async parsePropertyValue(value: PropertyValue): Promise<any> {
+  private async parsePropertyValue(
+    value: PropertyValue,
+    context: RenderingLoggingContext
+  ): Promise<any> {
     switch (value.type) {
       case "number":
         return value.number;
       case "title":
-        return await this.richText.renderMarkdown(value.title);
+        return await this.richText.renderMarkdown(value.title, context);
       case "rich_text":
-        return await this.richText.renderMarkdown(value.rich_text);
+        return await this.richText.renderMarkdown(value.rich_text, context);
       case "select":
         return value.select?.name;
       case "multi_select":
@@ -166,8 +165,8 @@ export class PropertiesParser {
       case "files":
       case "checkbox":
         const notSupported = "unsupported property type: " + value.type;
-        logger.warn(notSupported);
-        debug(notSupported + "\n%O", value);
+        context.warn(notSupported);
+        debug(notSupported + "\n%O", { context, value });
 
         return notSupported;
     }
@@ -175,7 +174,7 @@ export class PropertiesParser {
 
   public static filterIncludedKeys(
     keys: Map<string, string>,
-    includes: string[] | undefined,
+    includes: string[] | undefined
   ): Map<string, string> {
     if (!includes) {
       return keys;
@@ -189,6 +188,7 @@ export class PropertiesParser {
   }
 
   private errorMissingRequiredProperty(propertyName: string, page: Page) {
+    // todo: should this use context?
     const msg = `Page ${page.url} is missing required property ${propertyName}`;
     debug(msg + "\n%O", page);
 
