@@ -1,5 +1,6 @@
 import { Annotations, RichText } from '@notionhq/client/build/src/api-types';
 
+import { RenderingLoggingContext } from './logger';
 import { RichTextRenderer } from './RichTextRenderer';
 
 function annotations(x: Partial<Annotations>): Annotations {
@@ -13,6 +14,9 @@ function annotations(x: Partial<Annotations>): Annotations {
     ...x,
   };
 }
+
+const context = new RenderingLoggingContext('');
+
 describe("RichTextRenderer", () => {
   let sut: RichTextRenderer;
   let linkRenderer: typeof jest;
@@ -60,7 +64,7 @@ describe("RichTextRenderer", () => {
         },
       ];
 
-      const result = await sut.renderMarkdown(text);
+      const result = await sut.renderMarkdown(text, context);
 
       expect(result).toEqual("**Hello** World.");
     });
@@ -85,7 +89,7 @@ describe("RichTextRenderer", () => {
         },
       ];
 
-      const result = await sut.renderMarkdown(text);
+      const result = await sut.renderMarkdown(text, context);
 
       expect(result).toEqual("Hello **World.**");
     });
@@ -110,7 +114,7 @@ describe("RichTextRenderer", () => {
         },
       ];
 
-      const result = await sut.renderMarkdown(text);
+      const result = await sut.renderMarkdown(text, context);
 
       expect(result).toEqual(" ***Hello*** **World.**");
     });
@@ -135,7 +139,7 @@ describe("RichTextRenderer", () => {
         },
       ];
 
-      const result = await sut.renderMarkdown(text);
+      const result = await sut.renderMarkdown(text, context);
 
       expect(result).toEqual("**Hello** \n\tWorld\n");
     });
