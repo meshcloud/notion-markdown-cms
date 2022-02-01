@@ -35,6 +35,10 @@ export interface ChildDatabaseBlock extends BlockBase {
   type: "child_database";
 }
 
+export interface SyncedBlock extends BlockBase {
+  type: "synced_block";
+}
+
 // these are blocks that the notion API client code does not have proper typings for
 // for unknown reasons they removed types alltogether in v0.4 of the client
 // https://github.com/makenotion/notion-sdk-js/pulls?q=is%3Apr+is%3Aclosed#issuecomment-927781781
@@ -44,7 +48,8 @@ export type Block =
   | QuoteBlock
   | CalloutBlock
   | DividerBlock
-  | ChildDatabaseBlock;
+  | ChildDatabaseBlock
+  | SyncedBlock;
 
 export {
   Emoji,

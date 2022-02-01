@@ -24,7 +24,7 @@ export class BlockRenderer {
     block: Block,
     assets: AssetWriter,
     context: RenderingLoggingContext
-  ): Promise<BlockRenderResult> {
+  ): Promise<BlockRenderResult | null> {
     const renderMarkdown = async (text: RichText[]) => {
       return await this.richText.renderMarkdown(text, context);
     };
@@ -98,6 +98,10 @@ export class BlockRenderer {
         const msg = `<!-- included database ${block.id} -->\n`;
         const db = await this.deferredRenderer.renderChildDatabase(block.id);
         return { lines: msg + db.markdown };
+      case "synced_block":
+        // nothing to render, only the contents of the synced block are relevant
+        // however, these are children nöpcl, and thus retrieved by recursion in RecusivveBodyRenderer
+        return null;
       case "toggle":
       case "child_page":
       case "embed":

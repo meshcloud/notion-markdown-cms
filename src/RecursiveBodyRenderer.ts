@@ -11,12 +11,12 @@ export class RecursiveBodyRenderer {
   constructor(
     readonly publicApi: Client,
     readonly blockRenderer: BlockRenderer
-  ) { }
+  ) {}
 
   async renderBody(
     page: Page,
     assets: AssetWriter,
-    context: RenderingLoggingContext,
+    context: RenderingLoggingContext
   ): Promise<string> {
     debug("begin rendering body of page " + page.id, page.properties);
 
@@ -42,24 +42,28 @@ export class RecursiveBodyRenderer {
     assets: AssetWriter,
     context: RenderingLoggingContext
   ): Promise<string> {
-    const parentBlock = await this.blockRenderer.renderBlock(block, assets, context);
-    const parentLines = this.indent(parentBlock.lines, indent);
+    const parentBlock = await this.blockRenderer.renderBlock(
+      block,
+      assets,
+      context
+    );
+    const parentLines = parentBlock && this.indent(parentBlock.lines, indent);
 
     // due to the way the Notion API is built, we need to recurisvely retrieve child
     // blocks, see https://developers.notion.com/reference/retrieve-a-block
     // "If a block contains the key has_children: true, use the Retrieve block children endpoint to get the list of children"
     const children = block.has_children
       ? (await this.publicApi.blocks.children.list({ block_id: block.id }))
-        .results
+          .results
       : [];
 
-    const childIndent = indent + " ".repeat(parentBlock.childIndent || 0);
+    const childIndent = indent + " ".repeat(parentBlock?.childIndent || 0);
     const renderChilds = children.map(
       async (x) => await this.renderBlock(x, childIndent, assets, context)
     );
     const childLines = await Promise.all(renderChilds);
 
-    return [parentLines, ...childLines].join("\n\n");
+    return [parentLines, ...childLines].filter((x) => !!x).join("\n\n");
   }
 
   private indent(content: string, indent: string) {

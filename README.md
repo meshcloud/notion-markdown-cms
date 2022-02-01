@@ -46,6 +46,7 @@ The following [Notion API block object types](https://developers.notion.com/refe
 | Divider           | ✅ Yes         |                                                                                                                |
 | Table Of Contents | ❌ not planned | static site generators have their own ToC implementations                                                      |
 | Breadcrumb        | ❌ not planned | static site generators have their own nav implementations                                                      |
+| Synced Block      | ✅ Yes         | renders all children blocks                                                                                    |
 
 Support for other block types can be considered once they are available on the official Notion API.
 
