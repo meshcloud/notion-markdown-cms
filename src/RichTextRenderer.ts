@@ -120,7 +120,14 @@ export class RichTextRenderer {
         `Content failed parsing the whitespace test: '${content}'`
       );
     }
+
     const [_input, leading, core, trailing] = matchGroups;
+
+    if (!core) {
+      // this can happen e.g. if the formatted content is all whitespace (e.g. a "bold whitespace")
+      // this is something that can easily happen in a range based RTF editor, but does not make sense in markdown output
+      return [leading, trailing].join("");
+    }
 
     return [leading, modifier, core, reversedMod, trailing].join("");
   }

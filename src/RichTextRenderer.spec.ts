@@ -15,7 +15,7 @@ function annotations(x: Partial<Annotations>): Annotations {
   };
 }
 
-const context = new RenderingLoggingContext('');
+const context = new RenderingLoggingContext("");
 
 describe("RichTextRenderer", () => {
   let sut: RichTextRenderer;
@@ -142,6 +142,39 @@ describe("RichTextRenderer", () => {
       const result = await sut.renderMarkdown(text, context);
 
       expect(result).toEqual("**Hello** \n\tWorld\n");
+    });
+
+    test("handles annotated whitespace", async () => {
+      const text: RichText[] = [
+        {
+          type: "text",
+          plain_text: "Hello",
+          text: {
+            content: "Hello",
+          },
+          annotations: annotations({}),
+        },
+        {
+          type: "text",
+          plain_text: " ",
+          text: {
+            content: " ",
+          },
+          annotations: annotations({ bold: true, italic: true }),
+        },
+        {
+          type: "text",
+          plain_text: "World",
+          text: {
+            content: "World",
+          },
+          annotations: annotations({}),
+        },
+      ];
+
+      const result = await sut.renderMarkdown(text, context);
+
+      expect(result).toEqual("Hello World");
     });
   });
 });
