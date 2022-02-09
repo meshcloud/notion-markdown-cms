@@ -58,5 +58,7 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
 
   const rendered = deferredRenderer.getRenderedPages();
 
+  publicApi.printStats();
+
   return rendered;
 }
