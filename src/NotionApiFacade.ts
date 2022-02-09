@@ -1,5 +1,9 @@
-import { Client } from '@notionhq/client';
+import {
+    APIErrorCode, APIResponseError, Client, RequestTimeoutError, UnknownHTTPResponseError
+} from '@notionhq/client';
 import { DatabasesQueryParameters } from '@notionhq/client/build/src/api-endpoints';
+
+const debug = require("debug")("notion-api");
 
 /**
  * A common facade for interaction with notion API and handling common concerns (esp. retry on 502/rate limits).
@@ -16,13 +20,17 @@ export class NotionApiFacade {
   }
 
   async retrieveDatabase(databaseId: string) {
-    return await this.client.databases.retrieve({
-      database_id: databaseId,
-    });
+    return await withRetry(async () =>
+      this.client.databases.retrieve({
+        database_id: databaseId,
+      })
+    );
   }
 
   async queryDatabase(query: DatabasesQueryParameters) {
-    const result =  await this.client.databases.query(query); // todo: paging
+    const result = await withRetry(
+      async () => await this.client.databases.query(query)
+    ); // todo: paging
 
     if (result.next_cursor) {
       throw new Error(
@@ -34,11 +42,18 @@ export class NotionApiFacade {
   }
 
   async retrievePage(pageId: string) {
-    return await this.client.pages.retrieve({ page_id: pageId });
+    return await withRetry(
+      async () => await this.client.pages.retrieve({ page_id: pageId })
+    );
   }
 
   async listBlockChildren(blockId: string) {
-    const result = await this.client.blocks.children.list({ block_id: blockId }); // todo: paging here? 
+    const result = await withRetry(
+      async () =>
+        await this.client.blocks.children.list({
+          block_id: blockId,
+        })
+    ); // todo: paging here?
 
     if (result.next_cursor) {
       throw new Error(
@@ -48,4 +63,52 @@ export class NotionApiFacade {
 
     return result;
   }
+}
+
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function withRetry<T>(
+  f: () => Promise<T>,
+  maxRetries: number = 3,
+  retriableApiErrorCodes: APIErrorCode[] = [
+    APIErrorCode.ServiceUnavailable,
+    APIErrorCode.RateLimited,
+  ],
+  retriableUnknownHTTPStatusCodes: number[] = [502]
+) {
+  let lastError: any;
+
+  for (let i = 1; i <= maxRetries; i++) {
+    try {
+      return await f();
+    } catch (error: any) {
+      lastError = error;
+      const isRetriable =
+        (APIResponseError.isAPIResponseError(error) &&
+          error.code in retriableApiErrorCodes) ||
+        (UnknownHTTPResponseError.isUnknownHTTPResponseError(error) &&
+          error.status in retriableUnknownHTTPStatusCodes) ||
+        (RequestTimeoutError.isRequestTimeoutError(error));
+
+      if (!isRetriable) {
+        // throw any other error immediately
+        throw error;
+      }
+
+      debug(
+        `Notion API request failed with error ${error.code},  ${
+          maxRetries - i
+        } retries left`
+      );
+
+      await sleep(1000 * i); // chosen by fair dice roll
+    }
+  }
+
+  throw new Error(
+    `Failed to execute Notion API request, even after ${maxRetries} retries. Original error was ${lastError}`
+  );
 }
