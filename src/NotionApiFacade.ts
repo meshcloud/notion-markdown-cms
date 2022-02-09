@@ -26,11 +26,11 @@ export class NotionApiFacade {
   }
 
   async retrieveDatabase(databaseId: string) {
-    return await this.withRetry(async () =>
-      this.client.databases.retrieve({
+    return await this.withRetry(async () => {
+      return this.client.databases.retrieve({
         database_id: databaseId,
-      })
-    );
+      });
+    });
   }
 
   async queryDatabase(query: DatabasesQueryParameters) {
@@ -82,7 +82,7 @@ export class NotionApiFacade {
       APIErrorCode.RateLimited,
     ],
     retriableUnknownHTTPStatusCodes: number[] = [502]
-  ) {
+  ): Promise<T> {
     let lastError: any;
 
     for (let i = 1; i <= maxRetries; i++) {
@@ -99,8 +99,9 @@ export class NotionApiFacade {
           RequestTimeoutError.isRequestTimeoutError(error) && error;
 
         const isRetriable =
-          (apiError && error.code in retriableApiErrorCodes) ||
-          (unknownError && error.status in retriableUnknownHTTPStatusCodes) ||
+          (apiError && retriableApiErrorCodes.includes(error.code)) ||
+          (unknownError &&
+            retriableUnknownHTTPStatusCodes.includes(error.status)) ||
           timeoutError;
 
         if (!isRetriable) {
