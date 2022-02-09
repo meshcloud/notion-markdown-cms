@@ -1,4 +1,3 @@
-import { Client } from '@notionhq/client/build/src';
 import { Page } from '@notionhq/client/build/src/api-types';
 
 import { SyncConfig } from './';
@@ -7,6 +6,7 @@ import { Database } from './Database';
 import { DatabaseTableRenderer } from './DatabaseTableRenderer';
 import { DatabaseViewRenderer } from './DatabaseViewRenderer';
 import { DeferredRenderer } from './DeferredRenderer';
+import { NotionApiFacade } from './NotionApiFacade';
 import { RenderDatabasePageTask } from './RenderDatabasePageTask';
 import { DatabaseConfig, DatabaseConfigRenderPages, DatabaseConfigRenderTable } from './SyncConfig';
 
@@ -15,7 +15,7 @@ const debug = require("debug")("child-database");
 export class ChildDatabaseRenderer {
   constructor(
     private readonly config: SyncConfig,
-    private readonly publicApi: Client,
+    private readonly publicApi: NotionApiFacade,
     private readonly deferredRenderer: DeferredRenderer,
     private readonly tableRenderer: DatabaseTableRenderer,
     private readonly viewRenderer: DatabaseViewRenderer
@@ -81,21 +81,13 @@ export class ChildDatabaseRenderer {
     databaseId: string,
     dbConfig: DatabaseConfig
   ): Promise<Page[]> {
-    const db = await this.publicApi.databases.retrieve({
-      database_id: databaseId,
-    });
+    const db = await this.publicApi.retrieveDatabase(databaseId);
 
-    const allPages = await this.publicApi.databases.query({
+    const allPages = await this.publicApi.queryDatabase({
       database_id: db.id,
       sorts: dbConfig.sorts,
       page_size: 100,
-    }); // todo: paging
-
-    if (allPages.next_cursor) {
-      throw new Error(
-        `Paging not implemented, db ${db.id} has more than 100 entries`
-      );
-    }
+    });
 
     return allPages.results;
   }

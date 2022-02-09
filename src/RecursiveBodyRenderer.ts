@@ -1,15 +1,15 @@
-import { Client } from '@notionhq/client';
 import { Block, Page } from '@notionhq/client/build/src/api-types';
 
 import { AssetWriter } from './AssetWriter';
 import { BlockRenderer } from './BlockRenderer';
 import { RenderingLoggingContext } from './logger';
+import { NotionApiFacade } from './NotionApiFacade';
 
 const debug = require("debug")("body");
 
 export class RecursiveBodyRenderer {
   constructor(
-    readonly publicApi: Client,
+    readonly publicApi: NotionApiFacade,
     readonly blockRenderer: BlockRenderer
   ) {}
 
@@ -20,9 +20,7 @@ export class RecursiveBodyRenderer {
   ): Promise<string> {
     debug("begin rendering body of page " + page.id, page.properties);
 
-    const childs = await this.publicApi.blocks.children.list({
-      block_id: page.id,
-    });
+    const childs = await this.publicApi.listBlockChildren(page.id);
 
     // todo: paging
     const renderChilds = childs.results.map(
@@ -53,8 +51,7 @@ export class RecursiveBodyRenderer {
     // blocks, see https://developers.notion.com/reference/retrieve-a-block
     // "If a block contains the key has_children: true, use the Retrieve block children endpoint to get the list of children"
     const children = block.has_children
-      ? (await this.publicApi.blocks.children.list({ block_id: block.id }))
-          .results
+      ? (await this.publicApi.listBlockChildren(block.id)).results
       : [];
 
     const childIndent = indent + " ".repeat(parentBlock?.childIndent || 0);

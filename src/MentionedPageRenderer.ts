@@ -1,13 +1,14 @@
-import { APIErrorCode, Client } from '@notionhq/client';
+import { APIErrorCode } from '@notionhq/client';
 
 import { SyncConfig } from './';
 import { lookupDatabaseConfig } from './config';
 import { DeferredRenderer } from './DeferredRenderer';
+import { NotionApiFacade } from './NotionApiFacade';
 import { RenderDatabasePageTask } from './RenderDatabasePageTask';
 
 export class MentionedPageRenderer {
   constructor(
-    readonly publicApi: Client,
+    readonly publicApi: NotionApiFacade,
     readonly deferredRenderer: DeferredRenderer,
     readonly config: SyncConfig
   ) {}
@@ -54,7 +55,7 @@ export class MentionedPageRenderer {
 
   private async tryFindPage(pageId: string) {
     try {
-      return await this.publicApi.pages.retrieve({ page_id: pageId });
+      return await this.publicApi.retrievePage( pageId);
     } catch (error: any) {
       if (error.code === APIErrorCode.ObjectNotFound) {
         // this is an expected error, e.g. we do not have access to the page source

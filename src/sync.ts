@@ -1,24 +1,21 @@
-import { Client } from "@notionhq/client";
-
-import { BlockRenderer } from "./BlockRenderer";
-import { ChildDatabaseRenderer } from "./ChildDatabaseRenderer";
-import { DatabaseViewRenderer } from "./DatabaseViewRenderer";
-import { DeferredRenderer } from "./DeferredRenderer";
-import { FrontmatterRenderer } from "./FrontmatterRenderer";
-import { LinkRenderer } from "./LinkRenderer";
-import { MentionedPageRenderer } from "./MentionedPageRenderer";
-import { DatabasePageRenderer } from "./DatabasePageRenderer";
-import { PropertiesParser } from "./PropertiesParser";
-import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
-import { RichTextRenderer } from "./RichTextRenderer";
-import { SyncConfig } from "./SyncConfig";
-import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
-import { DatabaseEntryRenderer } from "./DatabaseEntryRenderer";
+import { BlockRenderer } from './BlockRenderer';
+import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
+import { DatabaseEntryRenderer } from './DatabaseEntryRenderer';
+import { DatabasePageRenderer } from './DatabasePageRenderer';
+import { DatabaseTableRenderer } from './DatabaseTableRenderer';
+import { DatabaseViewRenderer } from './DatabaseViewRenderer';
+import { DeferredRenderer } from './DeferredRenderer';
+import { FrontmatterRenderer } from './FrontmatterRenderer';
+import { LinkRenderer } from './LinkRenderer';
+import { MentionedPageRenderer } from './MentionedPageRenderer';
+import { NotionApiFacade } from './NotionApiFacade';
+import { PropertiesParser } from './PropertiesParser';
+import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
+import { RichTextRenderer } from './RichTextRenderer';
+import { SyncConfig } from './SyncConfig';
 
 export async function sync(notionApiToken: string, config: SyncConfig) {
-  const publicApi = new Client({
-    auth: notionApiToken,
-  });
+  const publicApi = new NotionApiFacade(notionApiToken);
 
   const deferredRenderer = new DeferredRenderer();
 
