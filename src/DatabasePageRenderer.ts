@@ -44,7 +44,10 @@ export class DatabasePageRenderer {
         const context = new RenderingLoggingContext(page.url, file);
 
         if (page.archived) {
-          context.warn(`page is arvhied`);
+          // have to skip rendering archived pages as attempting to retrieve the block will result in a HTTP 404
+          context.warn(`page is archived - skipping`);
+
+          return;
         }
 
         try {
