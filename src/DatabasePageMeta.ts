@@ -6,9 +6,6 @@ import { DatabaseEntryMeta } from './DatabaseEntryMeta';
  */
 export interface DatabasePageMeta extends DatabaseEntryMeta {
   title: string;
-  category: string;
-  order?: number;
-  layout?: string;
 }
 
 

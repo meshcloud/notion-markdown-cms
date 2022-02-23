@@ -1,8 +1,8 @@
-import { Page } from '@notionhq/client/build/src/api-types';
+import { Page } from "@notionhq/client/build/src/api-types";
+import { DatabasePageProperties } from "./DatabasePageProperties";
 
-import { PropertiesParser } from './PropertiesParser';
-import { RichTextRenderer } from './RichTextRenderer';
-import { DatabaseConfig } from './SyncConfig';
+import { PropertiesParser } from "./PropertiesParser";
+import { RichTextRenderer } from "./RichTextRenderer";
 
 const page: Partial<Page> = {
   id: "123",
@@ -33,72 +33,34 @@ const page: Partial<Page> = {
 };
 
 describe("PropertiesParser", () => {
-  describe("parse", () => {
+  describe("parsePageProperties", () => {
+    test("preserves all properties and adds conventional sort with title coming first", async () => {
+      const sut = new PropertiesParser(
+        new RichTextRenderer({} as any, {} as any)
+      );
 
-    test("preserves all properties and adds conventional with no include filter", async () => {
-      const sut = new PropertiesParser(new RichTextRenderer({} as any, {} as any));
+      const result = await sut.parsePageProperties(page as any);
 
-      const config: DatabaseConfig = {
-        outDir: "db/",
-        renderAs: 'table',
-        entries: {
-          emitToIndex: false
-        }
-      };
-
-      const result = await sut.parseProperties(page as any, config);
-
-      const expected = {
-        category: null,
-        order: 30,
-        title: "Terraform",
-        keys: new Map([
-          ["order", "order"],
-          ["Category", "category"],
-          ["Name", "name"],
-        ]),
-        properties: {
-          order: 30,
-          category: "Tools",
-          name: "Terraform",
+      const expected: DatabasePageProperties = {
+        meta: {
+          id: page.id!!,
+          url: page.url!!,
+          title: "Terraform",
         },
+        properties: new Map<string, any>([
+          ["Name", "Terraform"],
+          ["order", 30],
+          ["Category", "Tools"],
+        ]),
       };
 
       expect(result).toEqual(expected);
       // explicitly test key ordering
-      expect(Array.from(result.keys.keys())).toEqual(["Name", "order", "Category"]);
-    });
-
-    test("filters according to include filter", async () => {
-      const sut = new PropertiesParser(new RichTextRenderer({} as any, {} as any));
-
-      const config: DatabaseConfig = {
-        outDir: "db/",
-        renderAs: "table",
-        properties: {
-          include: ["Name", "Category"],
-        },
-        entries: {
-          emitToIndex: false
-        }
-      };
-
-      const result = await sut.parseProperties(page as any, config);
-      
-      const expected = {
-        category: null,
-        order: 30,
-        title: "Terraform",
-        keys: new Map([
-          ["Category", "category"],
-          ["Name", "name"],
-        ]),
-        properties: {
-          category: "Tools",
-          name: "Terraform",
-        },
-      };
-      expect(result).toEqual(expected);
+      expect(Array.from(result.properties.keys())).toEqual([
+        "Name",
+        "order",
+        "Category",
+      ]);
     });
   });
 });

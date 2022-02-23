@@ -1,4 +1,5 @@
 import { Sort } from "@notionhq/client/build/src/api-types";
+import { DatabasePageProperties } from "./DatabasePageProperties";
 
 export interface SyncConfig {
   /**
@@ -14,11 +15,9 @@ export interface SyncConfig {
   cmsDatabaseId: string;
 
   /**
-   * The output directory where the sync will place pages.
-   *
-   * Example: "docs/"
+   * Configuration options for the rendered pages
    */
-  outDir: string;
+   pages: PageConfig;
 
   /**
    * Configuration options for any database encountered while traversing the block graph.
@@ -33,27 +32,9 @@ export type DatabaseConfig =
 
 export interface DatabaseConfigBase {
   /**
-   * The output directory where the sync will place pages of this database.
-   *
-   * Example: docs/mydb"
-   */
-  outDir: string;
-
-  /**
    * Notion API https://developers.notion.com/reference/post-database-query#post-database-query-sort
    */
   sorts?: Sort[];
-
-  /**
-   * Configuration options for Notion API page properties
-   */
-  properties?: {
-    /**
-     * A whitelist of Notion API page property names to include in the markdown page properties.
-     * Use this to select properties for export and control their ordering in rendered tables.
-     */
-    include?: string[];
-  };
 
   renderAs: "table" | "pages+views";
 }
@@ -69,29 +50,19 @@ export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
   };
 }
 
+interface PageConfig {
+  frontmatterBuilder: (props: DatabasePageProperties) => Record<string, any>;
+  destinationPathBuilder: (props: DatabasePageProperties) => string;
+  filenameBuilder: (props: DatabasePageProperties) => string;
+}
+
 export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
   renderAs: "pages+views";
+  
   /**
-   * Add custom data to the page frontmatter
+   * Configuration options for the rendered pages
    */
-  pages: {
-    frontmatter: {
-      category: {
-        /**
-         * The Notion API page property that provides an optional sub-category value to use for the markdown page category.
-         *
-         * Example: "Cluster"
-         */
-        property?: string;
-        /**
-         * A static category value to assign to every page
-         */
-        static?: string;
-      };
-
-      extra?: Record<string, any>;
-    };
-  };
+  pages: PageConfig;
 
   /**
    * Configure "views" to render on the page where the child_database is encountered.

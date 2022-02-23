@@ -1,4 +1,4 @@
-import { DatabasePageMeta } from './DatabasePageMeta';
+import { DatabasePageMeta } from "./DatabasePageMeta";
 
 export interface DatabasePageProperties {
   /**
@@ -7,12 +7,7 @@ export interface DatabasePageProperties {
   meta: DatabasePageMeta;
 
   /**
-   * A mapping of property object keys -> property values
+   * A mapping of Notion property names -> parsed property values
    */
-  values: Record<string, any>;
-
-  /**
-   * A mapping of Notion API property names -> property object keys
-   */
-  keys: Map<string, string>;
+  properties: Map<string, any>;
 }

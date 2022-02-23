@@ -1,10 +1,8 @@
-import { Page, PropertyValue } from '@notionhq/client/build/src/api-types';
+import { Page, PropertyValue } from "@notionhq/client/build/src/api-types";
 
-import { DatabasePageProperties } from './DatabasePageProperties';
-import { RenderingLoggingContext } from './logger';
-import { RichTextRenderer } from './RichTextRenderer';
-import { slugify } from './slugify';
-import { DatabaseConfig, DatabaseConfigRenderPages } from './SyncConfig';
+import { DatabasePageProperties } from "./DatabasePageProperties";
+import { RenderingLoggingContext } from "./logger";
+import { RichTextRenderer } from "./RichTextRenderer";
 
 const debug = require("debug")("properties");
 
@@ -12,117 +10,69 @@ export class PropertiesParser {
   constructor(private readonly richText: RichTextRenderer) {}
 
   public async parsePageProperties(
-    page: Page,
-    config: DatabaseConfigRenderPages
+    page: Page
   ): Promise<DatabasePageProperties> {
-    const { title, category, order, properties, keys } =
-      await this.parseProperties(page, config);
+    const { title, properties } = await this.parseProperties(page);
 
     if (!title) {
       throw this.errorMissingRequiredProperty("of type 'title'", page);
-    }
-
-    const theCategory = category || config.pages.frontmatter.category.static;
-
-    if (!theCategory) {
-      throw this.errorMissingRequiredProperty(
-        config.pages.frontmatter.category.property || "static category",
-        page
-      );
     }
 
     return {
       meta: {
         id: page.id,
         url: page.url,
-        title: title, // notion API always calls it name
-        category: theCategory,
-        order: order,
-        ...config.pages.frontmatter.extra,
+        title: title,
       },
-      values: properties,
-      keys: keys,
+      properties,
     };
   }
 
-  public async parseProperties(page: Page, config: DatabaseConfig) {
-    /**
-     * Design: we always lookup the properties on the page object itself.
-     * This way we only parse properties once and avoid any problems coming from
-     * e.g. category properties being filtered via include filters.
-     */
-
+  private async parseProperties(page: Page) {
     /**
      * Terminology:
      *
      * property: Notion API property name
-     * key: slugified Notion API property name, used to later build frontmatter
      * value: Notion API property value
      */
 
     /**
-     * A record of key->value
+     * A record of property->value
      */
-    const properties: Record<string, any> = {};
-
-    /**
-     * A map of proprety -> key
-     */
-    const keys = new Map<string, string>();
+    const properties: Map<string, any> = new Map();
 
     let title: string | null = null;
     let titleProperty: string | null = null;
-    let category: string | null = null;
-    let order: number | undefined = undefined;
-
-    const categoryProperty =
-      config.renderAs === "pages+views" &&
-      config.pages.frontmatter.category.property;
 
     const context = new RenderingLoggingContext(page.url);
 
     for (const [name, value] of Object.entries(page.properties)) {
       const parsedValue = await this.parsePropertyValue(value, context);
-
-      if (
-        !config.properties?.include ||
-        config.properties.include.indexOf(name) >= 0
-      ) {
-        const slug = slugify(name);
-        properties[slug] = parsedValue;
-        keys.set(name, slug);
-      }
+      properties.set(name, parsedValue);
 
       if (value.type === "title") {
         title = parsedValue;
         titleProperty = name;
       }
-
-      if (categoryProperty && name === categoryProperty) {
-        category = parsedValue;
-      }
-
-      if (name === "order") {
-        order = parsedValue;
-      }
     }
 
-    if (!titleProperty) {
+    if (!title || !titleProperty) {
       throw this.errorMissingRequiredProperty("of type 'title'", page);
     }
 
     // no explicit ordering specified, so we make sure to put the title property first
-    const includes = config.properties?.include || [
+    const keyOrder = [
       titleProperty,
-      ...Array.from(keys.keys()).filter((x) => x != titleProperty),
+      ...Array.from(properties.keys()).filter((x) => x != titleProperty),
     ];
+
+    // maps preserve insertion order
+    const sortedProperties = new Map();
+    keyOrder.forEach(x => sortedProperties.set(x, properties.get(x)));
 
     return {
       title,
-      category,
-      order,
-      properties,
-      keys: PropertiesParser.filterIncludedKeys(keys, includes),
+      properties: sortedProperties,
     };
   }
 
@@ -170,21 +120,6 @@ export class PropertiesParser {
 
         return notSupported;
     }
-  }
-
-  public static filterIncludedKeys(
-    keys: Map<string, string>,
-    includes: string[] | undefined
-  ): Map<string, string> {
-    if (!includes) {
-      return keys;
-    }
-
-    // Maps iterate in insertion order, so preserve the correct ordering of keys according to includes ordering
-    const filtered = new Map<string, string>();
-    includes.forEach((i) => filtered.set(i, keys.get(i)!!)); // todo: should probably handle undefined here
-
-    return filtered;
   }
 
   private errorMissingRequiredProperty(propertyName: string, page: Page) {

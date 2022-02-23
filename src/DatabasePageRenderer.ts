@@ -8,7 +8,6 @@ import { RenderingLoggingContext } from './logger';
 import { PropertiesParser } from './PropertiesParser';
 import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
 import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
-import { slugify } from './slugify';
 import { DatabaseConfigRenderPages } from './SyncConfig';
 
 const fs = fsc.promises;
@@ -24,13 +23,10 @@ export class DatabasePageRenderer {
     page: Page,
     config: DatabaseConfigRenderPages
   ): Promise<RenderDatabasePageTask> {
-    const props = await this.propertiesParser.parsePageProperties(page, config);
+    const props = await this.propertiesParser.parsePageProperties(page);
 
-    const categorySlug = slugify(props.meta.category);
-    const destDir = `${config.outDir}/${categorySlug}`;
-
-    const nameSlug = slugify(props.meta.title);
-    const file = `${destDir}/${nameSlug}.md`;
+    const destDir = config.pages.destinationPathBuilder(props);
+    const file = `${destDir}/${config.pages.filenameBuilder(props)}.md`;
 
     // Design: all the rendering performance could be greatly enhanced writing directly to output streams instead
     // of concatenating all in memory. OTOH naively concatenatic strings is straightforward, easier to debug and rendering
@@ -53,7 +49,7 @@ export class DatabasePageRenderer {
         try {
           const assetWriter = new AssetWriter(destDir);
 
-          const frontmatter = this.frontmatterRenderer.renderFrontmatter(props);
+          const frontmatter = this.frontmatterRenderer.renderFrontmatter(props, config);
           const body = await this.bodyRenderer.renderBody(
             page,
             assetWriter,

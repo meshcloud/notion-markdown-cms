@@ -1,14 +1,17 @@
-import { Page } from '@notionhq/client/build/src/api-types';
+import { Page } from "@notionhq/client/build/src/api-types";
 
-import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
-import { Database } from './Database';
-import { DatabaseEntryRenderer } from './DatabaseEntryRenderer';
-import { DatabasePageRenderer } from './DatabasePageRenderer';
-import { RenderDatabaseEntryTask } from './RenderDatabaseEntryTask';
-import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
-import { RenderedDatabaseEntry } from './RenderedDatabaseEntry';
-import { RenderedDatabasePage } from './RenderedDatabasePage';
-import { DatabaseConfigRenderPages, DatabaseConfigRenderTable } from './SyncConfig';
+import { ChildDatabaseRenderer } from "./ChildDatabaseRenderer";
+import { Database } from "./Database";
+import { DatabaseEntryRenderer } from "./DatabaseEntryRenderer";
+import { DatabasePageRenderer } from "./DatabasePageRenderer";
+import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
+import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
+import { RenderedDatabasePage } from "./RenderedDatabasePage";
+import {
+  DatabaseConfigRenderPages,
+  DatabaseConfigRenderTable,
+} from "./SyncConfig";
 
 const debug = require("debug")("rendering");
 
@@ -59,7 +62,7 @@ export class DeferredRenderer {
     page: Page,
     config: DatabaseConfigRenderTable
   ): Promise<RenderDatabaseEntryTask> {
-    const task = await this.entryRenderer.renderEntry(page, config);
+    const task = await this.entryRenderer.renderEntry(page);
 
     // entries are complete the moment they are retrieved, there's no more deferred processing necessary on them
     // also there should be no duplicate entries, so we do not cache/lookup any of them
@@ -100,7 +103,7 @@ export class DeferredRenderer {
     ).map((x) => ({
       file: x.file,
       meta: x.properties.meta,
-      properties: x.properties.values,
+      properties: x.properties.properties,
     }));
 
     const entries: RenderedDatabaseEntry[] = this.renderedEntries.map((x) => ({
@@ -108,7 +111,7 @@ export class DeferredRenderer {
         id: x.id,
         url: x.url,
       },
-      properties: x.properties.values,
+      properties: x.properties.properties,
     }));
 
     return pages.concat(entries);

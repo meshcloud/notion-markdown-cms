@@ -10,19 +10,11 @@ export function lookupDatabaseConfig(
   databaseId: string | null
 ): DatabaseConfig {
   const rootCmsDbConfig: DatabaseConfigRenderPages = {
-    outDir: config.outDir,
     renderAs: "pages+views",
-    pages: {
-      frontmatter: {
-        category: {
-          property: "Category",
-        },
-      },
-    },
+    pages: config.pages,
     views: [],
   };
   const defaultDbConfig: DatabaseConfigRenderTable = {
-    outDir: config.outDir + "/" + databaseId,
     renderAs: "table",
     entries: {
       emitToIndex: false,

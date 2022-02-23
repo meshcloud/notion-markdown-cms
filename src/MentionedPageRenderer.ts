@@ -65,7 +65,7 @@ export class MentionedPageRenderer {
       }
     }
   }
-
+  
   private formatMentionedPage(pageId: string, mentionPlaintext: string) {
     const formattedId = pageId.replace(/-/g, "");
     return `mentioned page '${mentionPlaintext}' with url https://notion.so/${formattedId}`;

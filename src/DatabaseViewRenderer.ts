@@ -1,29 +1,22 @@
-import { DatabaseTableRenderer } from './DatabaseTableRenderer';
-import { LinkRenderer } from './LinkRenderer';
-import * as markdownTable from './markdown-table';
-import { PropertiesParser } from './PropertiesParser';
-import { RenderDatabasePageTask } from './RenderDatabasePageTask';
-import { DatabaseConfigRenderPages, DatabaseView } from './SyncConfig';
-
-const debug = require("debug")("database-views");
+import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
+import { LinkRenderer } from "./LinkRenderer";
+import * as markdownTable from "./markdown-table";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { DatabaseConfigRenderPages, DatabaseView } from "./SyncConfig";
 
 // todo: name afte what it renders, not to where
 export class DatabaseViewRenderer {
   constructor(private readonly linkRenderer: LinkRenderer) {}
 
-  public renderViews(entries: RenderDatabasePageTask[], config: DatabaseConfigRenderPages): string {
+  public renderViews(
+    entries: RenderDatabasePageTask[],
+    config: DatabaseConfigRenderPages
+  ): string {
     const views = config.views?.map((view) => {
-      const propKeys = entries[0].properties.keys;
-      const propKey = propKeys.get(view.properties.groupBy);
-
-      if (!propKey) {
-        const msg = `Could not render view ${view.title}, groupBy property ${view.properties.groupBy} not found`;
-        debug(msg + "%O", view);
-        throw new Error(msg);
-      }
-
       const grouped = new Array(
-        ...groupBy(entries, (p) => p.properties.values[propKey])
+        ...groupBy(entries, (p) =>
+          p.properties.properties.get(view.properties.groupBy)
+        )
       );
 
       return grouped
@@ -40,23 +33,23 @@ export class DatabaseViewRenderer {
     view: DatabaseView
   ): string {
     // todo: handle empty page
-    const props = pages[0].properties;
+    const pageProps = pages[0].properties;
 
-    const keys = PropertiesParser.filterIncludedKeys(
-      props.keys,
-      view.properties.include,
-    );
+    const includedProps =
+      view.properties.include || Array.from(pageProps.properties.keys());
 
     const table: any[][] = [];
 
-    const headers = Array.from(keys.keys());
+    const headers = includedProps;
     table[0] = headers;
 
-    const cols = Array.from(keys.values());
+    const cols = includedProps;
     pages.forEach((r) =>
       table.push(
         cols.map((c, i) => {
-          const content = DatabaseTableRenderer.escapeTableCell(r.properties.values[c]);
+          const content = DatabaseTableRenderer.escapeTableCell(
+            r.properties.properties.get(c)
+          );
           return i == 0
             ? this.linkRenderer.renderPageLink(content, r) // make the first cell a relative link to the page
             : content;

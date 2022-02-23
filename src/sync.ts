@@ -26,7 +26,7 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
     deferredRenderer,
     config
   );
-  const linkRenderer = new LinkRenderer(config);
+  const linkRenderer = new LinkRenderer();
   const viewRenderer = new DatabaseViewRenderer(linkRenderer);
   const richTextRenderer = new RichTextRenderer(
     mentionedPageRenderer,

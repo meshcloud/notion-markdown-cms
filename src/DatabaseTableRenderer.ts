@@ -5,16 +5,14 @@ export class DatabaseTableRenderer {
   public renderTable(entries: RenderDatabaseEntryTask[]): string {
     const table: any[][] = [];
 
-    for (const page of entries) {
+    for (const entry of entries) {
       if (table.length === 0) {
-        const headers = Array.from(page.properties.keys.keys());
+        const headers = Array.from(entry.properties.properties.keys());
         table[0] = headers;
       }
 
-      const cols = Array.from(page.properties.keys.values()).map((c, i) =>
-        DatabaseTableRenderer.escapeTableCell(
-          page.properties.values[c]
-        )
+      const cols = Array.from(entry.properties.properties.values()).map((c, i) =>
+        DatabaseTableRenderer.escapeTableCell(c)
       );
 
       table.push(cols);
@@ -29,6 +27,6 @@ export class DatabaseTableRenderer {
       return content.replace(/\n/g, "<br>");
     }
 
-    return content.toString();
+    return content?.toString() || "";
   }
 }
