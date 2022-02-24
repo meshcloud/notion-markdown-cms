@@ -112,15 +112,20 @@ Consult the [SyncConfig](./src/SyncConfig.ts) reference for documentation of ava
 > A CLI tool could be made available later.
 
 ```typescript
-import { SyncConfig, sync } from "notion-markdown-cms";
-
+import { slugify, SyncConfig, sync } from "notion-markdown-cms";
 const config: SyncConfig = {
   cmsDatabaseId: "8f1de8c578fb4590ad6fbb0dbe283338",
-  outDir: "docs/",
-  indexPath: "docs/.vuepress/index.ts",
+  pages: {
+    destinationDirBuilder: (page) => slugify(page.properties.get("Category")),
+    frontmatterBuilder: (page) => ({
+      id: page.meta.id,
+      url: page.meta.url,
+      title: page.meta.title,
+      category: page.properties.get("Category")
+    }),
+  },
   databases: {
     "fe9836a9-6557-4f17-8adb-a93d2584f35f": {
-      parentCategory: "cfmm/",
       sorts: [
         {
           property: "Scope",
@@ -131,10 +136,24 @@ const config: SyncConfig = {
           direction: "ascending",
         },
       ],
-      properties: {
-        category: "scope",
-        include: ["Name", "Scope", "Cluster", "Journey Stage", "Summary"],
+      renderAs: "pages+views",
+      pages: {
+        destinationDirBuilder: (page) => slugify(page.properties.get("Scope")),
+        frontmatterBuilder: (page) => ({
+          id: page.meta.id,
+          url: page.meta.url,
+          title: page.meta.title,
+          cluster: page.properties.get("Cluster")
+        }),
       },
+        views: [
+        {
+          title: "By Scope",
+          properties: {
+            groupBy: "Scope",
+            include: ["Name", "Scope", "Cluster", "Summary"],
+          },
+        },
     },
   },
 };
@@ -147,10 +166,20 @@ async function main() {
     );
   }
 
-  await sync(notionApiToken, config);
+  rimraf.sync("docs/!(README.md)**/*");
+
+  // change into the docs dir, this simplifies handling relative paths
+  process.chdir("docs/");
+
+  const rendered = await sync(notionApiToken, config);
+
+  // do something with the rendered index, e.g. writing it to a file or building a nav structure
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
 ```
 
 ## Credits, Related Projects and Inspiration
