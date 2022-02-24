@@ -28,7 +28,6 @@ describe("DatabaseViewRenderer", () => {
     ];
 
     const result = sut.renderViews(entries, {
-      entries: { emitToIndex: false },
       renderAs: "table",
       views: [
         {
@@ -72,7 +71,6 @@ describe("DatabaseViewRenderer", () => {
     ];
 
     const result = sut.renderViews(entries, {
-      entries: { emitToIndex: false },
       renderAs: "table",
       views: [
         {

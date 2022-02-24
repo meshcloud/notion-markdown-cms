@@ -62,11 +62,11 @@ export class DeferredRenderer {
     page: Page,
     config: DatabaseConfigRenderTable
   ): Promise<RenderDatabaseEntryTask> {
-    const task = await this.entryRenderer.renderEntry(page);
+    const task = await this.entryRenderer.renderEntry(page, config);
 
     // entries are complete the moment they are retrieved, there's no more deferred processing necessary on them
     // also there should be no duplicate entries, so we do not cache/lookup any of them
-    if (config.entries.emitToIndex) {
+    if (task.frontmatter) {
       this.renderedEntries.push(task);
     }
 
@@ -103,7 +103,7 @@ export class DeferredRenderer {
     ).map((x) => ({
       file: x.file,
       meta: x.properties.meta,
-      properties: x.properties.properties,
+      frontmatter: x.frontmatter,
     }));
 
     const entries: RenderedDatabaseEntry[] = this.renderedEntries.map((x) => ({
@@ -111,7 +111,7 @@ export class DeferredRenderer {
         id: x.properties.meta.id,
         url: x.properties.meta.url,
       },
-      properties: x.properties.properties,
+      frontmatter: x.frontmatter,
     }));
 
     return pages.concat(entries);

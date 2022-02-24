@@ -1,8 +1,12 @@
-export { RenderedDatabaseEntry } from './RenderedDatabaseEntry';
-export { RenderedDatabasePage } from './RenderedDatabasePage';
-export { sync } from './sync';
-export { slugify } from './slugify';
+export { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
+export { RenderedDatabasePage } from "./RenderedDatabasePage";
+export { sync } from "./sync";
+export { slugify } from "./slugify";
 export {
-    DatabaseConfig, DatabaseConfigRenderPages, DatabaseConfigRenderTable, SyncConfig
-} from './SyncConfig';
-
+  DatabaseConfig,
+  DatabaseConfigRenderPages,
+  DatabaseConfigRenderTable,
+  SyncConfig,
+} from "./SyncConfig";
+export { DatabasePageProperties } from "./DatabasePageProperties";
+export { DatabasePageMeta } from "./DatabasePageMeta";

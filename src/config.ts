@@ -16,9 +16,6 @@ export function lookupDatabaseConfig(
   };
   const defaultDbConfig: DatabaseConfigRenderTable = {
     renderAs: "table",
-    entries: {
-      emitToIndex: false,
-    },
   };
 
   const fallbackDbConfig: DatabaseConfig =

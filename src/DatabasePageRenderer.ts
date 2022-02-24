@@ -34,9 +34,11 @@ export class DatabasePageRenderer {
     // Design: all the rendering performance could be greatly enhanced writing directly to output streams instead
     // of concatenating all in memory. OTOH naively concatenatic strings is straightforward, easier to debug and rendering
     // performance probably not the bottleneck compared to the IO cost of notion API invocations.
+    const frontmatterProperties = config.pages.frontmatterBuilder(props);
 
     return {
       file,
+      frontmatter: frontmatterProperties,
       properties: props,
       render: async () => {
         const context = new RenderingLoggingContext(page.url, file);
@@ -51,10 +53,7 @@ export class DatabasePageRenderer {
         try {
           const assetWriter = new AssetWriter(destDir);
 
-          const frontmatter = this.frontmatterRenderer.renderFrontmatter(
-            props,
-            config
-          );
+          const frontmatter = this.frontmatterRenderer.renderFrontmatter(frontmatterProperties);
           const body = await this.bodyRenderer.renderBody(
             page,
             assetWriter,

@@ -52,11 +52,12 @@ export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
    */
   views?: DatabaseView[];
 
-  entries: {
+  entries?: {
     /**
-     * Controls whether to emit database entries to the index of rendered pages/entries
+     * Optional: Build frontmatter onject for index entries.
+     * If omitted, no index entries will be rendered for this table
      */
-    emitToIndex: boolean;
+     frontmatterBuilder: (props: DatabasePageProperties) => Record<string, any>;
   };
 }
 
