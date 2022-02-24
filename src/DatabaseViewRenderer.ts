@@ -68,7 +68,8 @@ export class DatabaseViewRenderer {
 
     const tableMd = markdownTable.markdownTable(table);
     if (view.title) {
-      return `## ${view.title} - ${titleAppendix}\n\n` + tableMd;
+      const formattedTitle = [view.title, titleAppendix].filter(x => !!x).join(" - ");
+      return `## ${formattedTitle}\n\n` + tableMd;
     } else {
       return tableMd;
     }
