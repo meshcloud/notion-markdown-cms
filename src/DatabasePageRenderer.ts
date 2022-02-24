@@ -1,14 +1,15 @@
-import * as fsc from 'fs';
+import * as fsc from "fs";
 
-import { Page } from '@notionhq/client/build/src/api-types';
+import { Page } from "@notionhq/client/build/src/api-types";
 
-import { AssetWriter } from './AssetWriter';
-import { FrontmatterRenderer } from './FrontmatterRenderer';
-import { RenderingLoggingContext } from './logger';
-import { PropertiesParser } from './PropertiesParser';
-import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
-import { RenderDatabasePageTask as RenderDatabasePageTask } from './RenderDatabasePageTask';
-import { DatabaseConfigRenderPages } from './SyncConfig';
+import { AssetWriter } from "./AssetWriter";
+import { FrontmatterRenderer } from "./FrontmatterRenderer";
+import { RenderingLoggingContext } from "./logger";
+import { PropertiesParser } from "./PropertiesParser";
+import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
+import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import { DatabaseConfigRenderPages } from "./SyncConfig";
+import { slugify } from "./slugify";
 
 const fs = fsc.promises;
 
@@ -25,8 +26,10 @@ export class DatabasePageRenderer {
   ): Promise<RenderDatabasePageTask> {
     const props = await this.propertiesParser.parsePageProperties(page);
 
-    const destDir = config.pages.destinationPathBuilder(props);
-    const file = `${destDir}/${config.pages.filenameBuilder(props)}.md`;
+    const destDir = config.pages.destinationDirBuilder(props);
+    const filenameBuilder =
+      config.pages.filenameBuilder || ((x) => slugify(x.meta.title));
+    const file = `${destDir}/${filenameBuilder(props)}.md`;
 
     // Design: all the rendering performance could be greatly enhanced writing directly to output streams instead
     // of concatenating all in memory. OTOH naively concatenatic strings is straightforward, easier to debug and rendering
@@ -49,7 +52,10 @@ export class DatabasePageRenderer {
         try {
           const assetWriter = new AssetWriter(destDir);
 
-          const frontmatter = this.frontmatterRenderer.renderFrontmatter(props, config);
+          const frontmatter = this.frontmatterRenderer.renderFrontmatter(
+            props,
+            config
+          );
           const body = await this.bodyRenderer.renderBody(
             page,
             assetWriter,

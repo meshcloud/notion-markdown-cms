@@ -17,7 +17,7 @@ export interface SyncConfig {
   /**
    * Configuration options for the rendered pages
    */
-   pages: PageConfig;
+   pages: PagesConfig;
 
   /**
    * Configuration options for any database encountered while traversing the block graph.
@@ -50,10 +50,25 @@ export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
   };
 }
 
-interface PageConfig {
+interface PagesConfig {
+  /**
+   * Build frontmatter object
+   */
   frontmatterBuilder: (props: DatabasePageProperties) => Record<string, any>;
-  destinationPathBuilder: (props: DatabasePageProperties) => string;
-  filenameBuilder: (props: DatabasePageProperties) => string;
+  
+  /**
+   * Build the destination directory where to store the page.
+   * Final path will be $destinationDir/$filename.md
+   */
+  destinationDirBuilder: (props: DatabasePageProperties) => string;
+  
+  /**
+   * Build the filename to store the page.
+   * Final path will be $destinationDir/$filename.md.
+   * 
+   * default: slug of the meta.title
+   */
+  filenameBuilder?: (props: DatabasePageProperties) => string;
 }
 
 export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
@@ -62,7 +77,7 @@ export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
   /**
    * Configuration options for the rendered pages
    */
-  pages: PageConfig;
+  pages: PagesConfig;
 
   /**
    * Configure "views" to render on the page where the child_database is encountered.
