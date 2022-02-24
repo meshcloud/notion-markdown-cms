@@ -5,7 +5,6 @@ describe("LinkRenderer", () => {
   test("renderPageLink strips outDir from link", async () => {
     const sut = new LinkRenderer();
     const page: Partial<RenderDatabasePageTask> = {
-      id: "id",
       file: "out/test.md",
     };
 

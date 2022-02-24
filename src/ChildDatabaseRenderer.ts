@@ -3,7 +3,6 @@ import { Page } from '@notionhq/client/build/src/api-types';
 import { SyncConfig } from './';
 import { lookupDatabaseConfig } from './config';
 import { Database } from './Database';
-import { DatabaseTableRenderer } from './DatabaseTableRenderer';
 import { DatabaseViewRenderer } from './DatabaseViewRenderer';
 import { DeferredRenderer } from './DeferredRenderer';
 import { NotionApiFacade } from './NotionApiFacade';
@@ -17,7 +16,6 @@ export class ChildDatabaseRenderer {
     private readonly config: SyncConfig,
     private readonly publicApi: NotionApiFacade,
     private readonly deferredRenderer: DeferredRenderer,
-    private readonly tableRenderer: DatabaseTableRenderer,
     private readonly viewRenderer: DatabaseViewRenderer
   ) { }
 
@@ -41,16 +39,18 @@ export class ChildDatabaseRenderer {
         entries,
         markdown,
       };
+    } else {
+      // render table
+      const entries = await this.queueEntryRendering(allPages, dbConfig);
+      const markdown = this.viewRenderer.renderViews(entries, dbConfig);
+  
+      return {
+        config: dbConfig,
+        entries,
+        markdown,
+      };
     }
 
-    const entries = await this.queueEntryRendering(allPages, dbConfig);
-    const markdown = this.tableRenderer.renderTable(entries);
-
-    return {
-      config: dbConfig,
-      entries,
-      markdown,
-    };
   }
 
   private async queueEntryRendering(

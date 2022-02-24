@@ -1,8 +1,6 @@
-import { DatabasePageProperties } from './DatabasePageProperties';
+import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
 
-export interface RenderDatabasePageTask {
-    id: string;
-    file: string;
-    properties: DatabasePageProperties;
-    render: () => Promise<any>;
+export interface RenderDatabasePageTask extends RenderDatabaseEntryTask {
+  file: string;
+  render: () => Promise<any>;
 }

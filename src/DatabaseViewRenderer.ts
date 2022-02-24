@@ -1,6 +1,7 @@
-import { DatabaseTableRenderer } from "./DatabaseTableRenderer";
+import { DatabaseConfigRenderTable } from ".";
 import { LinkRenderer } from "./LinkRenderer";
 import * as markdownTable from "./markdown-table";
+import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
 import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { DatabaseConfigRenderPages, DatabaseView } from "./SyncConfig";
 
@@ -9,34 +10,44 @@ export class DatabaseViewRenderer {
   constructor(private readonly linkRenderer: LinkRenderer) {}
 
   public renderViews(
-    entries: RenderDatabasePageTask[],
-    config: DatabaseConfigRenderPages
+    entries: (RenderDatabasePageTask | RenderDatabaseEntryTask)[],
+    config: DatabaseConfigRenderPages | DatabaseConfigRenderTable
   ): string {
-    const views = config.views?.map((view) => {
-      const grouped = new Array(
-        ...groupBy(entries, (p) =>
-          p.properties.properties.get(view.properties.groupBy)
-        )
-      );
+    const configuredViews = config.views || [{}];
 
-      return grouped
-        .map(([key, pages]) => this.renderView(pages, key, view))
-        .join("\n\n");
+    const views = configuredViews?.map((view) => {
+      const groupByProperty = view?.properties?.groupBy;
+
+      if (!groupByProperty) {
+        return this.renderView(entries, null, view);
+      } else {
+        const grouped = new Array(
+          ...groupBy(entries, (p) =>
+            p.properties.properties.get(groupByProperty)
+          )
+        );
+
+        return grouped
+          .map(([key, pages]) => this.renderView(pages, key, view))
+          .join("\n\n");
+      }
     });
 
     return views?.join("\n\n") || "";
   }
 
-  public renderView(
-    pages: RenderDatabasePageTask[],
-    titleAppendix: string,
+  private renderView(
+    pages: (RenderDatabasePageTask | RenderDatabaseEntryTask)[],
+    titleAppendix: string | null,
     view: DatabaseView
   ): string {
-    // todo: handle empty page
+    if (!pages[0]) {
+      return "<!-- no pages inside this database -->";
+    }
     const pageProps = pages[0].properties;
 
     const includedProps =
-      view.properties.include || Array.from(pageProps.properties.keys());
+      view?.properties?.include || Array.from(pageProps.properties.keys());
 
     const table: any[][] = [];
 
@@ -47,20 +58,20 @@ export class DatabaseViewRenderer {
     pages.forEach((r) =>
       table.push(
         cols.map((c, i) => {
-          const content = DatabaseTableRenderer.escapeTableCell(
-            r.properties.properties.get(c)
-          );
-          return i == 0
+          const content = escapeTableCell(r.properties.properties.get(c));
+          return i == 0 && isRenderPageTask(r)
             ? this.linkRenderer.renderPageLink(content, r) // make the first cell a relative link to the page
             : content;
         })
       )
     );
 
-    return (
-      `## ${view.title} - ${titleAppendix}\n\n` +
-      markdownTable.markdownTable(table)
-    );
+    const tableMd = markdownTable.markdownTable(table);
+    if (view.title) {
+      return `## ${view.title} - ${titleAppendix}\n\n` + tableMd;
+    } else {
+      return tableMd;
+    }
   }
 }
 
@@ -90,4 +101,19 @@ export function groupBy<K, V>(
     }
   });
   return map;
+}
+
+function escapeTableCell(content: string | number | any): string {
+  // markdown table cells do not support newlines, however we can insert <br> elements instead
+  if (typeof content === "string") {
+    return content.replace(/\n/g, "<br>");
+  }
+
+  return content?.toString() || "";
+}
+
+function isRenderPageTask(
+  task: RenderDatabasePageTask | RenderDatabaseEntryTask
+): task is RenderDatabasePageTask {
+  return (task as RenderDatabasePageTask).render !== undefined;
 }

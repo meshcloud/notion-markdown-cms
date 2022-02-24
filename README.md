@@ -146,14 +146,14 @@ const config: SyncConfig = {
           cluster: page.properties.get("Cluster")
         }),
       },
-        views: [
-        {
-          title: "By Scope",
-          properties: {
-            groupBy: "Scope",
-            include: ["Name", "Scope", "Cluster", "Summary"],
-          },
+      views: [
+      {
+        title: "By Scope",
+        properties: {
+          groupBy: "Scope",
+          include: ["Name", "Scope", "Cluster", "Summary"],
         },
+      },
     },
   },
 };

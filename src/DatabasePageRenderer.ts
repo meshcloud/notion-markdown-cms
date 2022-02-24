@@ -36,7 +36,6 @@ export class DatabasePageRenderer {
     // performance probably not the bottleneck compared to the IO cost of notion API invocations.
 
     return {
-      id: page.id,
       file,
       properties: props,
       render: async () => {

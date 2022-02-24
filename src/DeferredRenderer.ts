@@ -108,8 +108,8 @@ export class DeferredRenderer {
 
     const entries: RenderedDatabaseEntry[] = this.renderedEntries.map((x) => ({
       meta: {
-        id: x.id,
-        url: x.url,
+        id: x.properties.meta.id,
+        url: x.properties.meta.url,
       },
       properties: x.properties.properties,
     }));

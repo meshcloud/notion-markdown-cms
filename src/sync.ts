@@ -2,7 +2,6 @@ import { BlockRenderer } from './BlockRenderer';
 import { ChildDatabaseRenderer } from './ChildDatabaseRenderer';
 import { DatabaseEntryRenderer } from './DatabaseEntryRenderer';
 import { DatabasePageRenderer } from './DatabasePageRenderer';
-import { DatabaseTableRenderer } from './DatabaseTableRenderer';
 import { DatabaseViewRenderer } from './DatabaseViewRenderer';
 import { DeferredRenderer } from './DeferredRenderer';
 import { FrontmatterRenderer } from './FrontmatterRenderer';
@@ -20,7 +19,6 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
   const deferredRenderer = new DeferredRenderer();
 
   const frontmatterRenderer = new FrontmatterRenderer();
-  const tableRenderer = new DatabaseTableRenderer();
   const mentionedPageRenderer = new MentionedPageRenderer(
     publicApi,
     deferredRenderer,
@@ -46,7 +44,6 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
     config,
     publicApi,
     deferredRenderer,
-    tableRenderer,
     viewRenderer
   );
 

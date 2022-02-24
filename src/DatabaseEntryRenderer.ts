@@ -6,15 +6,11 @@ import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
 export class DatabaseEntryRenderer {
   constructor(private readonly propertiesParser: PropertiesParser) {}
 
-  async renderEntry(
-    page: Page
-  ): Promise<RenderDatabaseEntryTask> {
+  async renderEntry(page: Page): Promise<RenderDatabaseEntryTask> {
     const props = await this.propertiesParser.parsePageProperties(page);
 
     return {
-      id: page.id,
-      url: page.url,
-      properties: props
+      properties: props,
     };
   }
 }

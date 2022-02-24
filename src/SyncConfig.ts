@@ -42,6 +42,16 @@ export interface DatabaseConfigBase {
 export interface DatabaseConfigRenderTable extends DatabaseConfigBase {
   renderAs: "table";
 
+  /**
+   * Customize rendering of the table as one or multiple views.
+   * 
+   * If not defined, will render a single view of the table with the Notion database property marked "title"
+   * as the first column.
+   * 
+   * An empty array will supress rendering of the table (useful if you want to only emit the table to the index).
+   */
+  views?: DatabaseView[];
+
   entries: {
     /**
      * Controls whether to emit database entries to the index of rendered pages/entries
@@ -94,10 +104,11 @@ export interface DatabaseConfigRenderPages extends DatabaseConfigBase {
    */
   views: DatabaseView[];
 }
+
 export interface DatabaseView {
-  title: string;
-  properties: {
-    groupBy: string;
+  title?: string;
+  properties?: {
+    groupBy?: string;
     include?: string[];
   };
 }
