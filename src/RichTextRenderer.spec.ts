@@ -1,6 +1,6 @@
 import { Annotations, RichText } from '@notionhq/client/build/src/api-types';
+import { RenderingContext } from './RenderingContext';
 
-import { RenderingLoggingContext } from './logger';
 import { RichTextRenderer } from './RichTextRenderer';
 
 function annotations(x: Partial<Annotations>): Annotations {
@@ -15,7 +15,7 @@ function annotations(x: Partial<Annotations>): Annotations {
   };
 }
 
-const context = new RenderingLoggingContext("");
+const context = new RenderingContext("", "");
 
 describe("RichTextRenderer", () => {
   let sut: RichTextRenderer;
