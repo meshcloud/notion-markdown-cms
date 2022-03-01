@@ -1,12 +1,19 @@
-import { RichText } from '@notionhq/client/build/src/api-types';
+import { RichText } from "@notionhq/client/build/src/api-types";
 
-import { AssetWriter } from './AssetWriter';
+import { AssetWriter } from "./AssetWriter";
 import {
-    Block, Emoji, ExternalFile, ExternalFileWithCaption, File, FileWithCaption, ImageBlock
-} from './Blocks';
-import { DeferredRenderer } from './DeferredRenderer';
-import { RenderingLoggingContext } from './logger';
-import { RichTextRenderer } from './RichTextRenderer';
+  Block,
+  Emoji,
+  ExternalFile,
+  ExternalFileWithCaption,
+  File,
+  FileWithCaption,
+  ImageBlock,
+} from "./Blocks";
+import { DeferredRenderer } from "./DeferredRenderer";
+import { RenderingContextLogger } from "./RenderingContextLogger";
+import { RichTextRenderer } from "./RichTextRenderer";
+import { RenderingContext } from "./RenderingContext";
 
 const debug = require("debug")("blocks");
 
@@ -22,8 +29,7 @@ export class BlockRenderer {
 
   async renderBlock(
     block: Block,
-    assets: AssetWriter,
-    context: RenderingLoggingContext
+    context: RenderingContext
   ): Promise<BlockRenderResult | null> {
     const renderMarkdown = async (text: RichText[]) => {
       return await this.richText.renderMarkdown(text, context);
@@ -63,7 +69,7 @@ export class BlockRenderer {
         };
       case "image":
         return {
-          lines: await this.renderImage(block, assets, context),
+          lines: await this.renderImage(block, context.assetWriter),
         };
       case "quote": {
         // it's legal for a notion block to be cmoposed of multiple lines
@@ -85,7 +91,7 @@ export class BlockRenderer {
       case "callout": {
         // render emoji as bold, this enables css to target it as `blockquote > strong:first-child`
         const content =
-          `**${this.renderIcon(block.callout.icon, context)}** ` +
+          `**${this.renderIcon(block.callout.icon, context.logger)}** ` +
           (await renderMarkdown(block.callout.text));
 
         return {
@@ -96,7 +102,7 @@ export class BlockRenderer {
         return { lines: "---" };
       case "child_database":
         const msg = `<!-- included database ${block.id} -->\n`;
-        const db = await this.deferredRenderer.renderChildDatabase(block.id);
+        const db = await this.deferredRenderer.renderChildDatabase(block.id, context.linkResolver);
         return { lines: msg + db.markdown };
       case "synced_block":
         // nothing to render, only the contents of the synced block are relevant
@@ -116,7 +122,7 @@ export class BlockRenderer {
           lines: this.renderUnsupported(
             `unsupported block type: ${block.type}`,
             block,
-            context
+            context.logger
           ),
         };
     }
@@ -124,7 +130,7 @@ export class BlockRenderer {
 
   private renderIcon(
     icon: File | ExternalFile | Emoji,
-    context: RenderingLoggingContext
+    logger: RenderingContextLogger
   ): string {
     switch (icon.type) {
       case "emoji":
@@ -134,19 +140,18 @@ export class BlockRenderer {
         return this.renderUnsupported(
           `unsupported icon type: ${icon.type}`,
           icon,
-          context
+          logger
         );
     }
   }
 
   async renderImage(
     block: ImageBlock,
-    assets: AssetWriter,
-    context: RenderingLoggingContext
+    assets: AssetWriter
   ): Promise<string> {
     const url = this.parseUrl(block.image);
 
-    const imageFile = await assets.download(url, block.id, context);
+    const imageFile = await assets.download(url, block.id);
 
     // todo: caption support
     const markdown = `![image-${block.id}](./${imageFile})`;
@@ -172,7 +177,7 @@ export class BlockRenderer {
   private renderUnsupported(
     msg: string,
     obj: any,
-    context: RenderingLoggingContext
+    context: RenderingContextLogger
   ): string {
     context.warn(msg);
     debug(msg + "\n%O", obj);

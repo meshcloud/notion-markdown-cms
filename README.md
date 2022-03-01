@@ -77,7 +77,7 @@ The following [Notion API page property types](https://developers.notion.com/ref
 
 | Propety type     | Supported | Notes                         |
 | ---------------- | --------- | ----------------------------- |
-| Rich text        | ✅ Yes     | rendered as markdown string   |
+| Rich text        | ✅ Yes     | rendered as plaintext string  |
 | Number           | ✅ Yes     |                               |
 | Select           | ✅ Yes     | rendered as name              |
 | Multi Select     | ✅ Yes     | rendered as array of names    |

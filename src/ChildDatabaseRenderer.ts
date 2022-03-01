@@ -1,13 +1,18 @@
-import { Page } from '@notionhq/client/build/src/api-types';
+import { Page } from "@notionhq/client/build/src/api-types";
 
-import { SyncConfig } from './';
-import { lookupDatabaseConfig } from './config';
-import { Database } from './Database';
-import { DatabaseViewRenderer } from './DatabaseViewRenderer';
-import { DeferredRenderer } from './DeferredRenderer';
-import { NotionApiFacade } from './NotionApiFacade';
-import { RenderDatabasePageTask } from './RenderDatabasePageTask';
-import { DatabaseConfig, DatabaseConfigRenderPages, DatabaseConfigRenderTable } from './SyncConfig';
+import { SyncConfig } from "./";
+import { lookupDatabaseConfig } from "./config";
+import { Database } from "./Database";
+import { DatabaseViewRenderer } from "./DatabaseViewRenderer";
+import { DeferredRenderer } from "./DeferredRenderer";
+import { NotionApiFacade } from "./NotionApiFacade";
+import { PageLinkResolver } from "./PageLinkResolver";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
+import {
+  DatabaseConfig,
+  DatabaseConfigRenderPages,
+  DatabaseConfigRenderTable,
+} from "./SyncConfig";
 
 const debug = require("debug")("child-database");
 
@@ -17,22 +22,31 @@ export class ChildDatabaseRenderer {
     private readonly publicApi: NotionApiFacade,
     private readonly deferredRenderer: DeferredRenderer,
     private readonly viewRenderer: DatabaseViewRenderer
-  ) { }
+  ) {}
 
-  async renderChildDatabase(databaseId: string): Promise<Database> {
+  async renderChildDatabase(
+    databaseId: string,
+    linkResolver: PageLinkResolver
+  ): Promise<Database> {
     const dbConfig = lookupDatabaseConfig(this.config, databaseId);
 
     // no view was defined for this database, render as a plain inline table
     const allPages = await this.fetchPages(databaseId, dbConfig);
 
-    const renderPages = dbConfig.renderAs === "pages+views"
+    const renderPages = dbConfig.renderAs === "pages+views";
 
-    debug("rendering child database " + databaseId + " as " + dbConfig.renderAs);
+    debug(
+      "rendering child database " + databaseId + " as " + dbConfig.renderAs
+    );
 
     if (renderPages) {
       const pageConfig = dbConfig as DatabaseConfigRenderPages;
       const entries = await this.queuePageRendering(allPages, pageConfig);
-      const markdown = await this.viewRenderer.renderViews(entries, dbConfig as DatabaseConfigRenderPages);
+      const markdown = await this.viewRenderer.renderViews(
+        entries,
+        dbConfig as DatabaseConfigRenderPages,
+        linkResolver
+      );
 
       return {
         config: dbConfig,
@@ -42,15 +56,18 @@ export class ChildDatabaseRenderer {
     } else {
       // render table
       const entries = await this.queueEntryRendering(allPages, dbConfig);
-      const markdown = this.viewRenderer.renderViews(entries, dbConfig);
-  
+      const markdown = this.viewRenderer.renderViews(
+        entries,
+        dbConfig,
+        linkResolver
+      );
+
       return {
         config: dbConfig,
         entries,
         markdown,
       };
     }
-
   }
 
   private async queueEntryRendering(

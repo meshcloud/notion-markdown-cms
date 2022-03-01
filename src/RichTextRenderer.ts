@@ -1,8 +1,9 @@
-import { RichText } from '@notionhq/client/build/src/api-types';
+import { RichText } from "@notionhq/client/build/src/api-types";
 
-import { LinkRenderer } from './LinkRenderer';
-import { RenderingLoggingContext } from './logger';
-import { MentionedPageRenderer } from './MentionedPageRenderer';
+import { LinkRenderer } from "./LinkRenderer";
+import { RenderingContextLogger } from "./RenderingContextLogger";
+import { MentionedPageRenderer } from "./MentionedPageRenderer";
+import { RenderingContext } from "./RenderingContext";
 
 const debug = require("debug")("richtext");
 
@@ -20,7 +21,7 @@ export class RichTextRenderer {
 
   public async renderMarkdown(
     text: RichText[],
-    context: RenderingLoggingContext
+    context: RenderingContext
   ): Promise<string> {
     const result: string[] = [];
 
@@ -35,7 +36,7 @@ export class RichTextRenderer {
 
   private async renderMarkdownCode(
     rt: RichText,
-    context: RenderingLoggingContext
+    context: RenderingContext
   ) {
     const mod = this.modifier(rt);
 
@@ -44,7 +45,7 @@ export class RichTextRenderer {
         return this.renderUnsupported(
           `unsupported rich text type: ${rt.type}`,
           rt,
-          context
+          context.logger
         );
       case "mention":
         switch (rt.mention.type) {
@@ -54,14 +55,14 @@ export class RichTextRenderer {
               rt.plain_text
             );
             const text = this.wrap(mod, page.properties.meta.title);
-            return this.linkRenderer.renderPageLink(text, page);
+            return this.linkRenderer.renderPageLink(text, page, context.linkResolver);
           case "database":
           case "date":
           case "user":
             return this.renderUnsupported(
               `unsupported rich text mention type: ${rt.mention.type}`,
               rt,
-              context
+              context.logger
             );
         }
       case "text":
@@ -135,7 +136,7 @@ export class RichTextRenderer {
   private renderUnsupported(
     msg: string,
     obj: any,
-    context: RenderingLoggingContext
+    context: RenderingContextLogger
   ): string {
     context.warn(msg);
     debug(msg + "\n%O", obj);

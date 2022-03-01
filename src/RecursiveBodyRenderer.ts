@@ -1,9 +1,8 @@
 import { Block, Page } from '@notionhq/client/build/src/api-types';
 
-import { AssetWriter } from './AssetWriter';
 import { BlockRenderer } from './BlockRenderer';
-import { RenderingLoggingContext } from './logger';
 import { NotionApiFacade } from './NotionApiFacade';
+import { RenderingContext } from './RenderingContext';
 
 const debug = require("debug")("body");
 
@@ -15,8 +14,7 @@ export class RecursiveBodyRenderer {
 
   async renderBody(
     page: Page,
-    assets: AssetWriter,
-    context: RenderingLoggingContext
+    context: RenderingContext
   ): Promise<string> {
     debug("begin rendering body of page " + page.id, page.properties);
 
@@ -24,7 +22,7 @@ export class RecursiveBodyRenderer {
 
     // todo: paging
     const renderChilds = childs.results.map(
-      async (x) => await this.renderBlock(x, "", assets, context)
+      async (x) => await this.renderBlock(x, "", context)
     );
     const blocks = await Promise.all(renderChilds);
     const body = blocks.join("\n\n");
@@ -37,12 +35,10 @@ export class RecursiveBodyRenderer {
   async renderBlock(
     block: Block,
     indent: string,
-    assets: AssetWriter,
-    context: RenderingLoggingContext
+    context: RenderingContext
   ): Promise<string> {
     const parentBlock = await this.blockRenderer.renderBlock(
       block,
-      assets,
       context
     );
     const parentLines = parentBlock && this.indent(parentBlock.lines, indent);
@@ -56,7 +52,7 @@ export class RecursiveBodyRenderer {
 
     const childIndent = indent + " ".repeat(parentBlock?.childIndent || 0);
     const renderChilds = children.map(
-      async (x) => await this.renderBlock(x, childIndent, assets, context)
+      async (x) => await this.renderBlock(x, childIndent, context)
     );
     const childLines = await Promise.all(renderChilds);
 

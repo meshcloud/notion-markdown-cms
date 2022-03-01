@@ -1,7 +1,7 @@
 import { Page, PropertyValue } from "@notionhq/client/build/src/api-types";
 
 import { DatabasePageProperties } from "./DatabasePageProperties";
-import { RenderingLoggingContext } from "./logger";
+import { RenderingContextLogger } from "./RenderingContextLogger";
 import { RichTextRenderer } from "./RichTextRenderer";
 
 const debug = require("debug")("properties");
@@ -44,7 +44,7 @@ export class PropertiesParser {
     let title: string | null = null;
     let titleProperty: string | null = null;
 
-    const context = new RenderingLoggingContext(page.url);
+    const context = new RenderingContextLogger(page.url);
 
     for (const [name, value] of Object.entries(page.properties)) {
       const parsedValue = await this.parsePropertyValue(value, context);
@@ -78,15 +78,15 @@ export class PropertiesParser {
 
   private async parsePropertyValue(
     value: PropertyValue,
-    context: RenderingLoggingContext
+    context: RenderingContextLogger
   ): Promise<any> {
     switch (value.type) {
       case "number":
         return value.number;
       case "title":
-        return await this.richText.renderMarkdown(value.title, context);
+        return await this.richText.renderPlainText(value.title);
       case "rich_text":
-        return await this.richText.renderMarkdown(value.rich_text, context);
+        return await this.richText.renderPlainText(value.rich_text);
       case "select":
         return value.select?.name;
       case "multi_select":

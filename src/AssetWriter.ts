@@ -1,27 +1,25 @@
-import { promises as fs } from 'fs';
-import got from 'got';
-import { KeyvFile } from 'keyv-file';
-import * as mime from 'mime-types';
-
-import { RenderingLoggingContext } from './logger';
+import { promises as fs } from "fs";
+import got from "got";
+import { KeyvFile } from "keyv-file";
+import * as mime from "mime-types";
+import { RenderingContextLogger } from "./RenderingContextLogger";
 
 const cache = new KeyvFile({
   filename: ".cache/keyv.json",
 });
 
 export class AssetWriter {
-  constructor(readonly dir: string) {}
+  constructor(
+    private readonly dir: string,
+    private readonly logger: RenderingContextLogger
+  ) {}
 
   async store(name: string, buffer: Buffer) {
     await fs.mkdir(this.dir, { recursive: true });
     await fs.writeFile(`${this.dir}/${name}`, buffer);
   }
 
-  async download(
-    url: string,
-    fileName: string,
-    context: RenderingLoggingContext
-  ) {
+  async download(url: string, fileName: string) {
     // the got http lib promises to do proper user-agent compliant http caching
     // see https://github.com/sindresorhus/got/blob/main/documentation/cache.md
 
@@ -35,7 +33,7 @@ export class AssetWriter {
     const imageFile = fileName + "." + ext;
 
     const cacheInfo = response.isFromCache ? " (from cache)" : "";
-    context.info(`downloading ${imageFile}` + cacheInfo);
+    this.logger.info(`downloading ${imageFile}` + cacheInfo);
     await this.store(imageFile, response.rawBody);
 
     return imageFile;

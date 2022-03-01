@@ -1,6 +1,7 @@
 import { DatabaseConfigRenderTable } from ".";
 import { LinkRenderer } from "./LinkRenderer";
 import * as markdownTable from "./markdown-table";
+import { PageLinkResolver } from "./PageLinkResolver";
 import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
 import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { DatabaseConfigRenderPages, DatabaseView } from "./SyncConfig";
@@ -11,7 +12,8 @@ export class DatabaseViewRenderer {
 
   public renderViews(
     entries: (RenderDatabasePageTask | RenderDatabaseEntryTask)[],
-    config: DatabaseConfigRenderPages | DatabaseConfigRenderTable
+    config: DatabaseConfigRenderPages | DatabaseConfigRenderTable,
+    linkResolver: PageLinkResolver
   ): string {
     const configuredViews = config.views || [{}];
 
@@ -19,7 +21,7 @@ export class DatabaseViewRenderer {
       const groupByProperty = view?.properties?.groupBy;
 
       if (!groupByProperty) {
-        return this.renderView(entries, null, view);
+        return this.renderView(entries, null, view, linkResolver);
       } else {
         const grouped = new Array(
           ...groupBy(entries, (p) =>
@@ -28,7 +30,7 @@ export class DatabaseViewRenderer {
         );
 
         return grouped
-          .map(([key, pages]) => this.renderView(pages, key, view))
+          .map(([key, pages]) => this.renderView(pages, key, view, linkResolver))
           .join("\n\n");
       }
     });
@@ -39,7 +41,8 @@ export class DatabaseViewRenderer {
   private renderView(
     pages: (RenderDatabasePageTask | RenderDatabaseEntryTask)[],
     titleAppendix: string | null,
-    view: DatabaseView
+    view: DatabaseView,
+    linkResolver: PageLinkResolver
   ): string {
     if (!pages[0]) {
       return "<!-- no pages inside this database -->";
@@ -60,7 +63,7 @@ export class DatabaseViewRenderer {
         cols.map((c, i) => {
           const content = escapeTableCell(r.properties.properties.get(c));
           return i == 0 && isRenderPageTask(r)
-            ? this.linkRenderer.renderPageLink(content, r) // make the first cell a relative link to the page
+            ? this.linkRenderer.renderPageLink(content, r, linkResolver) // make the first cell a relative link to the page
             : content;
         })
       )
@@ -68,7 +71,9 @@ export class DatabaseViewRenderer {
 
     const tableMd = markdownTable.markdownTable(table);
     if (view.title) {
-      const formattedTitle = [view.title, titleAppendix].filter(x => !!x).join(" - ");
+      const formattedTitle = [view.title, titleAppendix]
+        .filter((x) => !!x)
+        .join(" - ");
       return `## ${formattedTitle}\n\n` + tableMd;
     } else {
       return tableMd;

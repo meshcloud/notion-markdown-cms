@@ -1,4 +1,5 @@
-import { RenderDatabasePageTask } from './RenderDatabasePageTask';
+import { PageLinkResolver } from "./PageLinkResolver";
+import { RenderDatabasePageTask } from "./RenderDatabasePageTask";
 
 export class LinkRenderer {
   constructor() {}
@@ -7,9 +8,13 @@ export class LinkRenderer {
     return `[${text}](${url})`;
   }
 
-  renderPageLink(text: string, page: RenderDatabasePageTask): string {
-    const url = "/" + page.file;
-    
-    return this.renderUrlLink(text, url);
+  renderPageLink(
+    text: string,
+    toPage: RenderDatabasePageTask,
+    linkResolver: PageLinkResolver
+  ): string {
+    const link = linkResolver.resolveRelativeLinkTo(toPage.file);
+
+    return this.renderUrlLink(text, link);
   }
 }

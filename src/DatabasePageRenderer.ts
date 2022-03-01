@@ -2,14 +2,13 @@ import * as fsc from "fs";
 
 import { Page } from "@notionhq/client/build/src/api-types";
 
-import { AssetWriter } from "./AssetWriter";
 import { FrontmatterRenderer } from "./FrontmatterRenderer";
-import { RenderingLoggingContext } from "./logger";
 import { PropertiesParser } from "./PropertiesParser";
 import { RecursiveBodyRenderer } from "./RecursiveBodyRenderer";
 import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { DatabaseConfigRenderPages } from "./SyncConfig";
 import { slugify } from "./slugify";
+import { RenderingContext } from "./RenderingContext";
 
 const fs = fsc.promises;
 
@@ -41,35 +40,33 @@ export class DatabasePageRenderer {
       frontmatter: frontmatterProperties,
       properties: props,
       render: async () => {
-        const context = new RenderingLoggingContext(page.url, file);
-
+        
+        const context = new RenderingContext(page.url, file)
+        
         if (page.archived) {
           // have to skip rendering archived pages as attempting to retrieve the block will result in a HTTP 404
-          context.warn(`page is archived - skipping`);
+          context.logger.warn(`page is archived - skipping`);
 
           return;
         }
 
         try {
-          const assetWriter = new AssetWriter(destDir);
-
           const frontmatter = this.frontmatterRenderer.renderFrontmatter(frontmatterProperties);
           const body = await this.bodyRenderer.renderBody(
             page,
-            assetWriter,
             context
           );
 
           await fs.mkdir(destDir, { recursive: true });
           await fs.writeFile(file, frontmatter + body);
 
-          context.complete();
+          context.logger.complete();
         } catch (error) {
           // While catch-log-throw is usually an antipattern, it is the renderes job to orchestrate the rendering
           // job with concerns like logging and  writing to the outside world. Hence this place is appropriate.
           // We need to throw the error here so that the rendering process can crash with a proper error message, since
           // an error at this point here is unrecoverable.
-          context.error(error);
+          context.logger.error(error);
           throw error;
         }
       },

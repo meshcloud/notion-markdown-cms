@@ -8,6 +8,7 @@ import { FrontmatterRenderer } from './FrontmatterRenderer';
 import { LinkRenderer } from './LinkRenderer';
 import { MentionedPageRenderer } from './MentionedPageRenderer';
 import { NotionApiFacade } from './NotionApiFacade';
+import { PageLinkResolver } from './PageLinkResolver';
 import { PropertiesParser } from './PropertiesParser';
 import { RecursiveBodyRenderer } from './RecursiveBodyRenderer';
 import { RichTextRenderer } from './RichTextRenderer';
@@ -50,7 +51,8 @@ export async function sync(notionApiToken: string, config: SyncConfig) {
   deferredRenderer.initialize(dbRenderer, pageRenderer, entryRenderer);
 
   // seed it with the root database
-  await deferredRenderer.renderChildDatabase(config.cmsDatabaseId);
+  const rootLinkResolver = new PageLinkResolver(".");
+  await deferredRenderer.renderChildDatabase(config.cmsDatabaseId, rootLinkResolver);
   await deferredRenderer.process();
 
   const rendered = deferredRenderer.getRenderedPages();

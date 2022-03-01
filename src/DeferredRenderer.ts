@@ -4,6 +4,7 @@ import { ChildDatabaseRenderer } from "./ChildDatabaseRenderer";
 import { Database } from "./Database";
 import { DatabaseEntryRenderer } from "./DatabaseEntryRenderer";
 import { DatabasePageRenderer } from "./DatabasePageRenderer";
+import { PageLinkResolver } from "./PageLinkResolver";
 import { RenderDatabaseEntryTask } from "./RenderDatabaseEntryTask";
 import { RenderDatabasePageTask as RenderDatabasePageTask } from "./RenderDatabasePageTask";
 import { RenderedDatabaseEntry } from "./RenderedDatabaseEntry";
@@ -35,8 +36,11 @@ export class DeferredRenderer {
     this.entryRenderer = entryRenderer;
   }
 
-  public async renderChildDatabase(databaseId: string): Promise<Database> {
-    return await this.dbRenderer.renderChildDatabase(databaseId);
+  public async renderChildDatabase(
+    databaseId: string,
+    linkResolver: PageLinkResolver
+  ): Promise<Database> {
+    return await this.dbRenderer.renderChildDatabase(databaseId, linkResolver);
   }
 
   public async renderPage(
