@@ -16,7 +16,7 @@ export class RichTextRenderer {
   ) {}
 
   public async renderPlainText(text: RichText[]): Promise<string> {
-    return text.map((rt) => rt.plain_text).join(" ");
+    return text.map((rt) => rt.plain_text).join("");
   }
 
   public async renderMarkdown(
