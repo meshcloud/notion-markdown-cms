@@ -41,7 +41,7 @@ The following [Notion API block object types](https://developers.notion.com/refe
 | Video             | ❌ Missing     |                                                                                                                |
 | File              | ❌ Missing     |                                                                                                                |
 | PDF               | ❌ Missing     |                                                                                                                |
-| Bookmark          | ❌ Missing     |                                                                                                                |
+| Bookmark          | ✅ Yes | use a caption as a link name    |                                                                                                                |
 | Equation          | ❌ Missing     |                                                                                                                |
 | Divider           | ✅ Yes         |                                                                                                                |
 | Table Of Contents | ❌ not planned | static site generators have their own ToC implementations                                                      |

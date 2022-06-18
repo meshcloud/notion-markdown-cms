@@ -102,16 +102,28 @@ export class BlockRenderer {
         return { lines: "---" };
       case "child_database":
         const msg = `<!-- included database ${block.id} -->\n`;
-        const db = await this.deferredRenderer.renderChildDatabase(block.id, context.linkResolver);
+        const db = await this.deferredRenderer.renderChildDatabase(
+          block.id,
+          context.linkResolver
+        );
         return { lines: msg + db.markdown };
       case "synced_block":
         // nothing to render, only the contents of the synced block are relevant
         // however, these are children nöpcl, and thus retrieved by recursion in RecusivveBodyRenderer
         return null;
+      case "bookmark":
+        const caption = block.bookmark.caption;
+        let title = block.bookmark.url;
+        if (caption) {
+          if (caption.length > 0)
+            title = await this.richText.renderPlainText(caption);
+        }
+        return {
+          lines: `[${title}](${block.bookmark.url})`,
+        };
       case "toggle":
       case "child_page":
       case "embed":
-      case "bookmark":
       case "video":
       case "file":
       case "pdf":
@@ -145,10 +157,7 @@ export class BlockRenderer {
     }
   }
 
-  async renderImage(
-    block: ImageBlock,
-    assets: AssetWriter
-  ): Promise<string> {
+  async renderImage(block: ImageBlock, assets: AssetWriter): Promise<string> {
     const url = this.parseUrl(block.image);
 
     const imageFile = await assets.download(url, block.id);
