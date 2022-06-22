@@ -14,6 +14,7 @@ import { DeferredRenderer } from "./DeferredRenderer";
 import { RenderingContextLogger } from "./RenderingContextLogger";
 import { RichTextRenderer } from "./RichTextRenderer";
 import { RenderingContext } from "./RenderingContext";
+import { LinkRenderer } from "./LinkRenderer";
 
 const debug = require("debug")("blocks");
 
@@ -24,7 +25,8 @@ export interface BlockRenderResult {
 export class BlockRenderer {
   constructor(
     private readonly richText: RichTextRenderer,
-    private readonly deferredRenderer: DeferredRenderer
+    private readonly deferredRenderer: DeferredRenderer,
+    private readonly link: LinkRenderer
   ) {}
 
   async renderBlock(
@@ -112,14 +114,13 @@ export class BlockRenderer {
         // however, these are children nöpcl, and thus retrieved by recursion in RecusivveBodyRenderer
         return null;
       case "bookmark":
-        const caption = block.bookmark.caption;
+        // render caption (if provided) as a link name
+        const caption = block.bookmark.caption || [];
         let title = block.bookmark.url;
-        if (caption) {
-          if (caption.length > 0)
-            title = await this.richText.renderPlainText(caption);
-        }
+        if (caption.length > 0)
+          title = await this.richText.renderPlainText(caption);
         return {
-          lines: `[${title}](${block.bookmark.url})`,
+          lines: this.link.renderUrlLink(title, block.bookmark.url),
         };
       case "toggle":
       case "child_page":
