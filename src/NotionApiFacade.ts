@@ -49,10 +49,10 @@ export class NotionApiFacade {
             ...query,
             start_cursor: next_cursor || undefined,
           })
-      ); 
+      );
 
       results.push(...response.results);
-      
+
       next_cursor = response.next_cursor;
     } while (next_cursor);
 
@@ -66,20 +66,25 @@ export class NotionApiFacade {
   }
 
   async listBlockChildren(blockId: string) {
-    const result = await this.withRetry(
-      async () =>
-        await this.client.blocks.children.list({
-          block_id: blockId,
-        })
-    ); // todo: paging here?
+    const results = [];
 
-    if (result.next_cursor) {
-      throw new Error(
-        `Paging not implemented, block ${blockId} has more children than returned in a single request`
+    let next_cursor: string | null = null;
+
+    do {
+      const response = await this.withRetry(
+        async () =>
+          await this.client.blocks.children.list({
+            block_id: blockId,
+            start_cursor: next_cursor || undefined,
+          })
       );
-    }
 
-    return result;
+      results.push(...response.results);
+
+      next_cursor = response.next_cursor;
+    } while (next_cursor);
+
+    return results;
   }
 
   printStats() {
