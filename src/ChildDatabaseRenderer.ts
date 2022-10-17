@@ -106,6 +106,6 @@ export class ChildDatabaseRenderer {
       page_size: 100,
     });
 
-    return allPages.results;
+    return allPages;
   }
 }

@@ -1,7 +1,11 @@
 import {
-    APIErrorCode, APIResponseError, Client, RequestTimeoutError, UnknownHTTPResponseError
-} from '@notionhq/client';
-import { DatabasesQueryParameters } from '@notionhq/client/build/src/api-endpoints';
+  APIErrorCode,
+  APIResponseError,
+  Client,
+  RequestTimeoutError,
+  UnknownHTTPResponseError,
+} from "@notionhq/client";
+import { DatabasesQueryParameters } from "@notionhq/client/build/src/api-endpoints";
 
 const debug = require("debug")("notion-api");
 
@@ -34,17 +38,25 @@ export class NotionApiFacade {
   }
 
   async queryDatabase(query: DatabasesQueryParameters) {
-    const result = await this.withRetry(
-      async () => await this.client.databases.query(query)
-    ); // todo: paging
+    const results = [];
 
-    if (result.next_cursor) {
-      throw new Error(
-        `Paging not implemented, db ${query.database_id} has more than 100 entries`
-      );
-    }
+    let next_cursor: string | null = null;
 
-    return result;
+    do {
+      const response = await this.withRetry(
+        async () =>
+          await this.client.databases.query({
+            ...query,
+            start_cursor: next_cursor || undefined,
+          })
+      ); 
+
+      results.push(...response.results);
+      
+      next_cursor = response.next_cursor;
+    } while (next_cursor);
+
+    return results;
   }
 
   async retrievePage(pageId: string) {
