@@ -20,8 +20,7 @@ export class RecursiveBodyRenderer {
 
     const childs = await this.publicApi.listBlockChildren(page.id);
 
-    // todo: paging
-    const renderChilds = childs.results.map(
+    const renderChilds = childs.map(
       async (x) => await this.renderBlock(x, "", context)
     );
     const blocks = await Promise.all(renderChilds);
@@ -47,7 +46,7 @@ export class RecursiveBodyRenderer {
     // blocks, see https://developers.notion.com/reference/retrieve-a-block
     // "If a block contains the key has_children: true, use the Retrieve block children endpoint to get the list of children"
     const children = block.has_children
-      ? (await this.publicApi.listBlockChildren(block.id)).results
+      ? (await this.publicApi.listBlockChildren(block.id))
       : [];
 
     const childIndent = indent + " ".repeat(parentBlock?.childIndent || 0);
