@@ -164,7 +164,12 @@ export class BlockRenderer {
     const imageFile = await assets.download(url, block.id);
 
     // todo: caption support
-    const markdown = `![image-${block.id}](./${imageFile})`;
+    const blockCaption = block.image.caption || [];
+    const caption =
+      blockCaption.length > 0
+        ? blockCaption[0].plain_text
+        : `image-${block.id}`;
+    const markdown = `![${caption}](./${imageFile})`;
     return markdown;
   }
 
