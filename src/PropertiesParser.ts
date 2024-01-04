@@ -109,9 +109,10 @@ export class PropertiesParser {
         return value.last_edited_time;
       case "last_edited_by":
         return value.last_edited_by.name;
+      case "people":
+        return value.people.map((person) => person.name).join(", ");
       case "formula":
       case "rollup":
-      case "people":
       case "files":
       case "checkbox":
         const notSupported = "unsupported property type: " + value.type;
