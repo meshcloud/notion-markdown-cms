@@ -86,7 +86,7 @@ The following [Notion API page property types](https://developers.notion.com/ref
 | Relation         | ✅ Yes     | rendered as array of page ids |
 | Rollup           | ❌ missing |                               |
 | Title            | ✅ Yes     | used as page title            |
-| People           | ❌ missing |                               |
+| People           | ✅ Yes     | rendered as comma-separated list of names |
 | Files            | ❌ missing |                               |
 | Checkbox         | ❌ missing |                               |
 | Url              | ✅ Yes     | rendered as string            |
